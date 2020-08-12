@@ -19,6 +19,7 @@ class GillespieBlockchain:
 
         # make sure input data matches
         assert net_p2p.number_of_nodes() == len(hashing_power) == len(is_selfish)
+        assert sum(hashing_power) == 1
 
         self.block_tree = blocktree.BlockTree()  # initialize block tree
 
@@ -65,11 +66,6 @@ class GillespieBlockchain:
         self.net_p2p.add_edges_from(
             edge_tuples_list
         )  # adds edges between all selfish nodes
-        # # # # creates a list of all Node() objects
-        # # # self.nodes = [
-        # # #     node2.Node2(id, self.block_tree, eta, verbose=verbose)
-        # # #     for (id, eta) in enumerate(hashing_power)
-        # # # ]
         #%%%%
 
         self.gossiping_nodes = set()  # initialize an empty set for gossiping nodes
@@ -78,15 +74,9 @@ class GillespieBlockchain:
         for n in self.net_p2p.nodes():
             self.nodes[n].set_neighbors(self.net_p2p.neighbors(n))
 
-        # create set of selfish neighbors for all SelfishNode instances in self.nodes
+        # create set of selfish neighbors for all SelfishNode instances
         for n in self.selfish_index:
             self.nodes[n].set_selfish_neighbors(self.selfish_index)
-
-        #%%%%
-        # create set of selfish neighbors for all SelfishNode() instances in self.nodes
-        # for n in self.selfish_index:
-        #     self.nodes[n].set_selfish_neighbors(self.selfish_index)
-        #%%%%
 
         # returns an array with indexes of nodes for which hashing_power is >0.
         (self.hashing_nodes,) = np.where(hashing_power > 0)
@@ -112,14 +102,8 @@ class GillespieBlockchain:
         miner = np.random.choice(self.hashing_nodes, p=self.hashing_power)
         self.nodes[miner].mine_block(self.time)
 
-        # # # #%%%%
-        # # # if self.is_selfish[miner] == True:
-        # # #     self.nodes[miner].mine_block(self.time)
-        # # # else:
-        # # #     self.nodes[miner].mine_block(self.time)
-        # # # #%%%%
-
-        # >0 conidition is like == True condition...
+        # the if-statement is actually unnecessary, because mine_block() also resets the non_gossiped_to set. Therefore is_gossiping() will always return True.
+        # add miner to set of gossiping nodes
         if self.nodes[miner].is_gossiping() == True:
             self.gossiping_nodes.add(miner)
 
@@ -156,6 +140,19 @@ class GillespieBlockchain:
         # then remove emitter from gossiping nodes set
         elif recipient in self.gossiping_nodes:
             self.gossiping_nodes.remove(recipient)
+
+    def snapshot(self):
+
+        string = "-------------------------\nSNAPSHOT \n"
+        for node in self.nodes:
+            string += "node {} (selfish: {}) is mining on block {} (height {}) \n".format(
+                node.id,
+                self.is_selfish[node.id],
+                node.current_block,
+                node.current_height,
+            )
+        string += "-------------------------"
+        print(string)
 
     def next_event(self):
         """
@@ -194,20 +191,10 @@ class GillespieBlockchain:
         if rnd_event <= (self.lambda_mine / lambda_sum):
             # if event is mining
             self.__mine_event()
-            self.snapshot()
+
+            # print snapshots
+            if self.verbose:
+                self.snapshot()
         else:
             # if event is gossip
             self.__gossip_event()
-
-    def snapshot(self):
-
-        string = "-------------------------\nSNAPSHOT \n"
-        for node in self.nodes:
-            string += "node {} (selfish: {}) is mining on block {} (height {}) \n".format(
-                node.id,
-                self.is_selfish[node.id],
-                node.current_block,
-                node.current_height,
-            )
-        string += "-------------------------"
-        print(string)

@@ -105,6 +105,17 @@ class SelfishNode:
         if except_miner:
             self.non_gossiped_to.discard(except_miner)
 
+    def __broadcast_to_honest(self, except_emitter=None, except_miner=None):
+
+        # broadcast to HONEST NODES
+        self.non_gossiped_to = self.neighbors.copy() - self.selfish_neighbors.copy()
+        # remove emitter from non_gossiped_to set if except_emitter argument is passed
+        if except_emitter:
+            self.non_gossiped_to.remove(except_emitter)
+        # discard miner from non_gossiped_to set if except_miner argument is passed (discarding because miner might be emitter)
+        if except_miner:
+            self.non_gossiped_to.discard(except_miner)
+
     def receive_block(self, emitter, time):
 
         ## check wether received block was mined by a selfish or honest node
@@ -284,8 +295,8 @@ class SelfishNode:
                 elif self.delta == 1:
                     # reject received block
                     self.__reject_received_block(emitter)
-                    # broadcast current (selfish) block to ALL NODES (including emitter and miner!)
-                    self.__broadcast_to_all()
+                    # broadcast current (selfish) block to HONEST NODES (including emitter and miner!)
+                    self.__broadcast_to_honest()
                     # reset private branch length
                     self.private_branch_length = 0
 
@@ -307,8 +318,8 @@ class SelfishNode:
                 elif self.delta == 2:
                     # reject received block
                     self.__reject_received_block(emitter)
-                    # broadcast current (selfish) block to ALL NODES (including emitter and miner!)
-                    self.__broadcast_to_all()
+                    # broadcast current (selfish) block to HONEST NODES (including emitter and miner!)
+                    self.__broadcast_to_honest()
                     # reset private branch length
                     self.private_branch_length = 0
 
@@ -327,9 +338,18 @@ class SelfishNode:
                     return False
 
                 ## SCENARIO (H):
-                else:
+                # else:
+                elif self.delta > 2:
                     if self.verbose:
                         print("SCENARIO H")
+
+                    # # # reject received block
+                    # # self.__reject_received_block(emitter)
+
+                    # # # broadcast old selfish block that matches new max_public_height of honest block (that I just received)
+
+                    # # # self.public_max_height
+
                     return False
 
     def mine_block(self, time=None):
@@ -355,7 +375,7 @@ class SelfishNode:
 
         ## SCENARIO (B): it was a 1-1 race, selfish nodes find a block -> broadcast to all
         if self.delta == 0 and self.private_branch_length == 2:
-            # broadcast to ALL NODES except emitter and miner of received block (if that node happens to be a neighbor)
+            # broadcast to ALL NODES (neighbors)
             self.__broadcast_to_all()
             # reset private branch length
             self.private_branch_length = 0
@@ -363,7 +383,7 @@ class SelfishNode:
         ## SCENARIO (A): any state but delta=0 and private_branch_length=2
         # elif not (self.delta == 0 and self.private_branch_length == 2):
         else:
-            # broadcast only to SELFISH NODES except emitter and miner of received block (nodes should both be selfish miners!)
+            # broadcast only to SELFISH NODES
             self.__broadcast_to_selfish()
         #%%%%
 
@@ -381,5 +401,3 @@ class SelfishNode:
         the node is still gossiping and it returns False if it is not gossiping anymore. 
         """
         return len(self.non_gossiped_to) > 0
-
-#
