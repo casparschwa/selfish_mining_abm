@@ -381,3 +381,5 @@ class SelfishNode:
         the node is still gossiping and it returns False if it is not gossiping anymore. 
         """
         return len(self.non_gossiped_to) > 0
+
+#
