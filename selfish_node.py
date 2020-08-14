@@ -7,18 +7,23 @@ class SelfishNode:
 
         self.id = id
         self.block_tree = block_tree
-        self.eta = eta
+        self.eta = eta  # hashing power
         self.current_block = current_block
         self.current_height = self.block_tree.attributes[current_block]["height"]
 
         self.neighbors = set()
         self.non_gossiped_to = set()
 
-        # variables for the selfish mining logic
+        ## variables required for SELFISH MINING LOGIC
+        # set of selfish nodes (neighbors)
         self.selfish_neighbors = set()
+        # variables to determine which scenario is taking place
         self.private_branch_length = 0
         self.public_max_height = self.block_tree.attributes[current_block]["height"]
         self.delta = self.current_height - self.public_max_height
+        # selfish nodes may broadcast an old block to honest nodes that is different to the current block -> scenario (H)
+        self.old_block_broadcast = self.current_block
+        self.old_height_broadcast = self.current_height
 
     def set_neighbors(self, ls_n):
         """
@@ -340,15 +345,43 @@ class SelfishNode:
                 ## SCENARIO (H):
                 # else:
                 elif self.delta > 2:
+                    # reject received block
+                    self.__reject_received_block(emitter)
+
+                    ## broadcast old selfish block that matches new max_public_height of honest block (that I just received)
+                    self.old_block_broadcast = self.current_block
+                    self.old_height_broadcast = self.current_height
+
+                    # to ensure that the old block we want to broadcast is actually a parent of the selfish node's current block nx.predecessors() fct. is used (similar to tag_main_chain() in blocktree.py)
+                    while self.old_height_broadcast != self.public_max_height:
+                        self.old_block_broadcast = list(
+                            self.block_tree.tree.predecessors(self.old_block_broadcast)
+                        )[0]
+                        self.old_height_broadcast = self.block_tree[
+                            self.old_block_broadcast
+                        ]["height"]
+
+                    #
+                    # IMPORTANT NOTE: For now the only sender of block triggering scenario (H) can be an HONEST NODE, because selfish node just reject the block and publish an old selfish block to the HONEST NODES.
+                    # This will change when I implement inform_selfish() functionality...
+                    #
+
+                    # broadcast old (selfish) block to HONEST NODES (including emitter, excluding miner!)
+                    self.__broadcast_to_honest(
+                        except_miner=self.block_tree[self.old_block_broadcast]["miner"]
+                    )
+
                     if self.verbose:
-                        print("SCENARIO H")
-
-                    # # # reject received block
-                    # # self.__reject_received_block(emitter)
-
-                    # # # broadcast old selfish block that matches new max_public_height of honest block (that I just received)
-
-                    # # # self.public_max_height
+                        print(
+                            "SCENARIO (H): node {} rejected received block {} (height: {}, miner: {}) from node {} AND published block {} to HONEST nodes".format(
+                                self.id,
+                                emitter.current_block,
+                                emitter.current_height,
+                                self.block_tree[self.current_block]["miner"],
+                                emitter.id,
+                                self.old_height_broadcast,
+                            )
+                        )
 
                     return False
 
