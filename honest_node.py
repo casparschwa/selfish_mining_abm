@@ -42,14 +42,29 @@ class HonestNode:
         height is greater than that of the block received. If it is, it accepts it, 
         otherwise the block is rejected.
         """
-        # if "my" current height is larger than the emitter's, reject block (increase
-        # "failed_gossip" counter of the emitter's block)
-        if self.current_height >= emitter.current_height:
-            self.block_tree.attributes[emitter.current_height]["failed_gossip"] += 1
+        # check whether emitter of block is selfish or honest so that we know whether to use emitter.current_block (honest nodes) or emitter.block_to_broadcast_to_honest (selfish nodes)
+        # emitter is honest
+        if isinstance(emitter, HonestNode):
+            block = emitter.current_block
+            height = emitter.current_height
+        # emitter is selfish
+        else:
+            block = emitter.block_to_broadcast_to_honest
+            height = emitter.height_to_broadcast_to_honest
+
+        # if "my" current height is larger than the emitter's, reject block (increase "failed_gossip" counter of the emitter's block)
+        if self.current_height >= height:
+            self.block_tree[block]["failed_gossip"] += 1
             if self.verbose:
                 print(
-                    "Gossip failed: Receiver's (node {}) current block ({}) >= emitter's (node {}) block ({})".format(
-                        self.id, self.current_block, emitter.id, emitter.current_block
+                    "---- Gossip failed: node {} rejected block {} (height: {}, miner: {}) from node {}, and continues mining on {} (height: {})".format(
+                        self.id,
+                        block,
+                        height,
+                        emitter.block_tree[block]["miner"],
+                        emitter.id,
+                        self.current_block,
+                        self.current_height,
                     )
                 )
             return False
@@ -58,14 +73,23 @@ class HonestNode:
         # Update to new block height and recipient adds all neighbors (except emitter)
         # to non_gossiped_to set
         else:
-            if self.verbose:
-                print("Node {} receives block from node {}".format(self.id, emitter.id))
-            self.current_block = emitter.current_block
-            self.current_height = emitter.current_height
+            self.current_block = block
+            self.current_height = height
             self.block_tree.attributes[self.current_block]["last_update"] = time
             self.block_tree.attributes[self.current_block]["reached_nodes"] += 1
             self.non_gossiped_to = self.neighbors.copy()  # reset gossip list
             self.non_gossiped_to.remove(emitter.id)
+
+            if self.verbose:
+                print(
+                    "Node {} adopts block {} (height: {}, miner: {}) from node {}".format(
+                        self.id,
+                        self.current_block,
+                        self.current_height,
+                        self.block_tree[self.current_block]["miner"],
+                        emitter.id,
+                    )
+                )
             return True
 
     def mine_block(self, time=None):

@@ -21,9 +21,11 @@ class SelfishNode:
         self.private_branch_length = 0
         self.public_max_height = self.block_tree.attributes[current_block]["height"]
         self.delta = self.current_height - self.public_max_height
-        # selfish nodes may broadcast an old block to honest nodes that is different to the current block -> scenario (H)
-        self.old_block_broadcast = self.current_block
-        self.old_height_broadcast = self.current_height
+        ## selfish nodes may broadcast an old block to honest nodes that is different to the current block -> scenario (H)
+        # whenever this nodes adopts a block self.block_to_broadcast_to_honest this gets reset to self.current_block
+        self.block_to_broadcast_to_honest = self.current_block
+        # whenever this nodes adopts a block self.height_to_broadcast_to_honest this gets reset to self.current_height
+        self.height_to_broadcast_to_honest = self.current_height
 
     def set_neighbors(self, ls_n):
         """
@@ -61,6 +63,10 @@ class SelfishNode:
         self.current_height = emitter.current_height
         self.block_tree.attributes[self.current_block]["last_update"] = time
         self.block_tree.attributes[self.current_block]["reached_nodes"] += 1
+
+        ## update block_to_broadcast_to_honest to ensure node always sends correct block to HONEST NODES
+        self.block_to_broadcast_to_honest = self.current_block
+        self.height_to_broadcast_to_honest = self.current_height
 
     def __reject_received_block(self, emitter):
         # reject received block
@@ -349,40 +355,37 @@ class SelfishNode:
                     self.__reject_received_block(emitter)
 
                     ## broadcast old selfish block that matches new max_public_height of honest block (that I just received)
-                    self.old_block_broadcast = self.current_block
-                    self.old_height_broadcast = self.current_height
-
                     # to ensure that the old block we want to broadcast is actually a parent of the selfish node's current block nx.predecessors() fct. is used (similar to tag_main_chain() in blocktree.py)
-                    while self.old_height_broadcast != self.public_max_height:
-                        self.old_block_broadcast = list(
-                            self.block_tree.tree.predecessors(self.old_block_broadcast)
+
+                    while self.height_to_broadcast_to_honest != self.public_max_height:
+                        self.block_to_broadcast_to_honest = list(
+                            self.block_tree.tree.predecessors(
+                                self.block_to_broadcast_to_honest
+                            )
                         )[0]
-                        self.old_height_broadcast = self.block_tree[
-                            self.old_block_broadcast
+                        self.height_to_broadcast_to_honest = self.block_tree[
+                            self.block_to_broadcast_to_honest
                         ]["height"]
+
+                    # broadcast old (selfish) block to HONEST NODES (including emitter, excluding miner!)
+                    self.__broadcast_to_honest()
 
                     #
                     # IMPORTANT NOTE: For now the only sender of block triggering scenario (H) can be an HONEST NODE, because selfish node just reject the block and publish an old selfish block to the HONEST NODES.
                     # This will change when I implement inform_selfish() functionality...
                     #
-
-                    # broadcast old (selfish) block to HONEST NODES (including emitter, excluding miner!)
-                    self.__broadcast_to_honest(
-                        except_miner=self.block_tree[self.old_block_broadcast]["miner"]
-                    )
-
                     if self.verbose:
                         print(
-                            "SCENARIO (H): node {} rejected received block {} (height: {}, miner: {}) from node {} AND published block {} to HONEST nodes".format(
+                            "SCENARIO (H): node {} rejected received block {} (height: {}, miner: {}) from node {} AND published block {} (height: {}) to HONEST nodes".format(
                                 self.id,
                                 emitter.current_block,
                                 emitter.current_height,
                                 self.block_tree[self.current_block]["miner"],
                                 emitter.id,
-                                self.old_height_broadcast,
+                                self.block_to_broadcast_to_honest,
+                                self.height_to_broadcast_to_honest,
                             )
                         )
-
                     return False
 
     def mine_block(self, time=None):

@@ -145,9 +145,9 @@ class GillespieBlockchain:
 
         string = "-------------------------\nSNAPSHOT \n"
         for node in self.nodes:
-            string += "node {} (selfish: {}) is mining on block {} (height {}) \n".format(
+            string += "node {} ({}) is mining on block {} (height {}) \n".format(
                 node.id,
-                self.is_selfish[node.id],
+                "selfish" if self.is_selfish[node.id] else "honest",
                 node.current_block,
                 node.current_height,
             )
