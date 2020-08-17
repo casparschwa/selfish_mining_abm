@@ -111,10 +111,10 @@ class SelfishNode:
         # broadcast to ALL NODES
         self.non_gossiped_to = self.neighbors.copy()  # reset gossip list
         # remove emitter from non_gossiped_to set if except_emitter = True
-        if except_emitter:
-            self.non_gossiped_to.remove(except_emitter)
+        if except_emitter is not None:
+            self.non_gossiped_to.discard(except_emitter)
         # discard miner from non_gossiped_to set if except_miner = True (discarding because miner might be emitter)
-        if except_miner:
+        if except_miner is not None:
             self.non_gossiped_to.discard(except_miner)
 
     def __broadcast_to_selfish(self, except_emitter=None, except_miner=None):
@@ -134,7 +134,7 @@ class SelfishNode:
         self.non_gossiped_to = self.selfish_neighbors.copy()
         # remove emitter from non_gossiped_to set if except_emitter argument is passed
         if except_emitter is not None:
-            self.non_gossiped_to.remove(except_emitter)
+            self.non_gossiped_to.discard(except_emitter)
         # discard miner from non_gossiped_to set if except_miner argument is passed (discarding because miner might be emitter)
         if except_miner is not None:
             self.non_gossiped_to.discard(except_miner)
@@ -145,7 +145,7 @@ class SelfishNode:
         self.non_gossiped_to = self.neighbors.copy() - self.selfish_neighbors.copy()
         # remove emitter from non_gossiped_to set if except_emitter argument is passed
         if except_emitter is not None:
-            self.non_gossiped_to.remove(except_emitter)
+            self.non_gossiped_to.discard(except_emitter)
         # discard miner from non_gossiped_to set if except_miner argument is passed (discarding because miner might be emitter)
         if except_miner is not None:
             self.non_gossiped_to.discard(except_miner)
@@ -275,12 +275,12 @@ class SelfishNode:
 
                     if self.verbose:
                         print(
-                            "SCENARIO (N/A): Gossip failed: node {} rejected block {} from node {} (height: {}, miner: {})".format(
+                            "SCENARIO (N/A): node {} rejected block {} from node {} (height: {}, miner: {})".format(
                                 self.id,
-                                self.current_block,
+                                emitter.current_block,
                                 emitter.id,
-                                self.current_height,
-                                self.block_tree[self.current_block]["miner"],
+                                emitter.current_height,
+                                emitter.block_tree[emitter.current_block]["miner"],
                             )
                         )
 
@@ -290,6 +290,17 @@ class SelfishNode:
             # elif emitter.current_height < self.current_height:
             else:
                 self.block_tree[emitter.current_height]["failed_gossip"] += 1
+
+                if self.verbose:
+                    print(
+                        "SCENARIO (N/A): node {} rejected block {} from node {} (height: {}, miner: {})".format(
+                            self.id,
+                            emitter.current_block,
+                            emitter.id,
+                            emitter.current_height,
+                            emitter.block_tree[emitter.current_block]["miner"],
+                        )
+                    )
                 return False
 
         # The block I am receiving was mined by an HONEST NODE
@@ -300,15 +311,17 @@ class SelfishNode:
             ## check whether received block's height is greater than current public_max_height
             # received block's height is greater than current public_max_height
             if emitter.current_height > self.public_max_height:
-                #
-                # IMPORTANT NOTE: implement a test to see if there might be cases where received block's height leads the current public max height by more than 1 block (due to e.g. propagation lag)
-                # if this assert error comes up, implement a strategy to prevent this problem
-                #
-                assert (
-                    emitter.current_height - self.public_max_height == 1
-                ), "Difference between received block's height and current public max. height is greater than one. It's {}. node id: {}, emitter id: {}".format(
-                    emitter.current_height - self.public_max_height, self.id, emitter.id
-                )
+
+                # IMPORTANT NOTE: I think this is actually unneccessary. We're updating public max height, not just adding += 1
+                # # #
+                # # # IMPORTANT NOTE: implement a test to see if there might be cases where received block's height leads the current public max height by more than 1 block (due to e.g. propagation lag)
+                # # # if this assert error comes up, implement a strategy to prevent this problem
+                # # #
+                # # assert (
+                # #     emitter.current_height - self.public_max_height == 1
+                # # ), "Difference between received block's height and current public max. height is greater than one. It's {}. node id: {}, emitter id: {}".format(
+                # #     emitter.current_height - self.public_max_height, self.id, emitter.id
+                # # )
 
                 # update public max height
                 self.public_max_height = emitter.current_height
@@ -342,7 +355,7 @@ class SelfishNode:
 
                     return True
 
-                ## SCENARIO (F):
+                ## SCENARIO (F) - lead was 1, now it's 1-1, publish branch, try our luck:
                 elif self.delta == 1:
                     # reject received block
                     self.__reject_received_block(emitter)
@@ -372,7 +385,7 @@ class SelfishNode:
 
                     return False
 
-                ## SCENARIO (G):
+                ## SCENARIO (G) - lead was 2, now honest are catching up, publish entire branch:
                 elif self.delta == 2:
                     # reject received block
                     self.__reject_received_block(emitter)
@@ -389,7 +402,7 @@ class SelfishNode:
 
                     if self.verbose:
                         print(
-                            "SCENARIO (G): node {} rejected block {} from node {} (height: {}, miner: {}) & published block {} (height: {}) to ALL nodes".format(
+                            "SCENARIO (G): node {} rejected block {} from node {} (height: {}, miner: {}) & published block {} (height: {}) to HONEST nodes".format(
                                 self.id,
                                 emitter.current_block,
                                 emitter.id,
@@ -402,7 +415,7 @@ class SelfishNode:
 
                     return False
 
-                ## SCENARIO (H):
+                ## SCENARIO (H) - lead was more than 2, now honest found one block, publish old block that matches public max height:
                 # else:
                 elif self.delta > 2:
                     # reject received block
