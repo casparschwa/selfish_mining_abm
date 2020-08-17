@@ -9,7 +9,7 @@ class SelfishNode:
         self.block_tree = block_tree
         self.eta = eta  # hashing power
         self.current_block = current_block
-        self.current_height = self.block_tree.attributes[current_block]["height"]
+        self.current_height = self.block_tree[current_block]["height"]
 
         self.neighbors = set()
         self.non_gossiped_to = set()
@@ -19,7 +19,7 @@ class SelfishNode:
         self.selfish_neighbors = set()
         # variables to determine which scenario is taking place
         self.private_branch_length = 0
-        self.public_max_height = self.block_tree.attributes[current_block]["height"]
+        self.public_max_height = self.block_tree[current_block]["height"]
         self.delta = self.current_height - self.public_max_height
         ## selfish nodes may broadcast an old block to honest nodes that is different to the current block -> scenario (H)
         self.block_to_broadcast_to_honest = self.current_block
@@ -59,8 +59,8 @@ class SelfishNode:
         # adopt received block
         self.current_block = emitter.current_block
         self.current_height = emitter.current_height
-        self.block_tree.attributes[self.current_block]["last_update"] = time
-        self.block_tree.attributes[self.current_block]["reached_nodes"] += 1
+        self.block_tree[self.current_block]["last_update"] = time
+        self.block_tree[self.current_block]["reached_nodes"] += 1
 
         # # # ## reset block_to_broadcast_to_honest to ensure node always sends correct block to HONEST NODES
         # # # self.block_to_broadcast_to_honest = self.current_block
@@ -68,7 +68,7 @@ class SelfishNode:
 
     def __reject_received_block(self, emitter):
         # reject received block
-        self.block_tree.attributes[emitter.current_height]["failed_gossip"] += 1
+        self.block_tree[emitter.current_height]["failed_gossip"] += 1
 
         # # # ## reset block_to_broadcast_to_honest to ensure node always sends correct block to HONEST NODES
         # # # self.block_to_broadcast_to_honest = self.current_block
@@ -155,7 +155,7 @@ class SelfishNode:
         ## check wether received block was mined by a selfish or honest node
 
         # The received block was mined by a SELFISH NODE
-        if self.block_tree.attributes[emitter.current_block]["miner_is_selfish"]:
+        if self.block_tree[emitter.current_block]["miner_is_selfish"]:
 
             # calculate delta_prev (previous to block receival -- like in the paper)
             self.delta = self.current_height - self.public_max_height
@@ -174,9 +174,7 @@ class SelfishNode:
                     # broadcast to ALL NODES except emitter and miner of received block (if that node happens to be a neighbor)
                     self.__broadcast_to_all(
                         except_emitter=emitter.id,
-                        except_miner=self.block_tree.attributes[self.current_block][
-                            "miner"
-                        ],
+                        except_miner=self.block_tree[self.current_block]["miner"],
                     )
 
                     # reset private branch length
@@ -193,7 +191,7 @@ class SelfishNode:
                                 self.current_block,
                                 emitter.id,
                                 self.current_height,
-                                self.block_tree.attributes[self.current_block]["miner"],
+                                self.block_tree[self.current_block]["miner"],
                             )
                         )
                     return True
@@ -217,7 +215,7 @@ class SelfishNode:
                                 self.current_block,
                                 emitter.id,
                                 self.current_height,
-                                self.block_tree.attributes[self.current_block]["miner"],
+                                self.block_tree[self.current_block]["miner"],
                             )
                         )
 
@@ -227,11 +225,11 @@ class SelfishNode:
                     # # #     self.id, emitter.id, self.selfish_neighbors
                     # # # )
                     # # # assert (
-                    # # #     self.block_tree.attributes[self.current_block]["miner"]
+                    # # #     self.block_tree[self.current_block]["miner"]
                     # # #     in self.selfish_neighbors
                     # # # ), "receiver: {}, miner: {}, selfish neighbors: {}".format(
                     # # #     self.id,
-                    # # #     self.block_tree.attributes[self.current_block]["miner"],
+                    # # #     self.block_tree[self.current_block]["miner"],
                     # # #     self.selfish_neighbors,
                     # # # )
 
@@ -244,18 +242,13 @@ class SelfishNode:
                 # IMPORTANT NOTE: This ensures that a selfish node mines on top of their selfish branch in a 1-1 race.
 
                 # current block was mined by an HONEST NODE
-                if (
-                    self.block_tree.attributes[self.current_block]["miner_is_selfish"]
-                    == False
-                ):
+                if self.block_tree[self.current_block]["miner_is_selfish"] == False:
                     # adopt received block
                     self.__adopt_received_block(emitter, time)
                     # broadcast to ALL NODES except emitter and miner of received block (if that node happens to be a neighbor)
                     self.__broadcast_to_all(
                         except_emitter=emitter.id,
-                        except_miner=self.block_tree.attributes[self.current_block][
-                            "miner"
-                        ],
+                        except_miner=self.block_tree[self.current_block]["miner"],
                     )
                     # reset private branch length
                     self.private_branch_length = 0
@@ -271,7 +264,7 @@ class SelfishNode:
                                 self.current_block,
                                 emitter.id,
                                 self.current_height,
-                                self.block_tree.attributes[self.current_block]["miner"],
+                                self.block_tree[self.current_block]["miner"],
                             )
                         )
                     return True
@@ -287,7 +280,7 @@ class SelfishNode:
                                 self.current_block,
                                 emitter.id,
                                 self.current_height,
-                                self.block_tree.attributes[self.current_block]["miner"],
+                                self.block_tree[self.current_block]["miner"],
                             )
                         )
 
@@ -296,7 +289,7 @@ class SelfishNode:
             # received block's height is less than current block's height
             # elif emitter.current_height < self.current_height:
             else:
-                self.block_tree.attributes[emitter.current_height]["failed_gossip"] += 1
+                self.block_tree[emitter.current_height]["failed_gossip"] += 1
                 return False
 
         # The block I am receiving was mined by an HONEST NODE
@@ -327,9 +320,7 @@ class SelfishNode:
                     # broadcast to ALL NODES except emitter and miner of received block (if that node happens to be a neighbor)
                     self.__broadcast_to_all(
                         except_emitter=emitter.id,
-                        except_miner=self.block_tree.attributes[self.current_block][
-                            "miner"
-                        ],
+                        except_miner=self.block_tree[self.current_block]["miner"],
                     )
                     # reset private branch length
                     self.private_branch_length = 0
@@ -345,7 +336,7 @@ class SelfishNode:
                                 self.current_block,
                                 emitter.id,
                                 self.current_height,
-                                self.block_tree.attributes[self.current_block]["miner"],
+                                self.block_tree[self.current_block]["miner"],
                             )
                         )
 

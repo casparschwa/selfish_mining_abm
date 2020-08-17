@@ -13,7 +13,7 @@ class HonestNode:
         self.neighbors = set()
         self.non_gossiped_to = set()
 
-        self.current_height = self.block_tree.attributes[current_block]["height"]
+        self.current_height = self.block_tree[current_block]["height"]
 
     def set_neighbors(self, ls_n):
         """
@@ -77,8 +77,8 @@ class HonestNode:
         else:
             self.current_block = block
             self.current_height = height
-            self.block_tree.attributes[self.current_block]["last_update"] = time
-            self.block_tree.attributes[self.current_block]["reached_nodes"] += 1
+            self.block_tree[self.current_block]["last_update"] = time
+            self.block_tree[self.current_block]["reached_nodes"] += 1
             self.non_gossiped_to = self.neighbors.copy()  # reset gossip list
             self.non_gossiped_to.remove(emitter.id)
 
