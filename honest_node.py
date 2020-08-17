@@ -43,26 +43,28 @@ class HonestNode:
         otherwise the block is rejected.
         """
         # check whether emitter of block is selfish or honest so that we know whether to use emitter.current_block (honest nodes) or emitter.block_to_broadcast_to_honest (selfish nodes)
+
         # emitter is honest
         if isinstance(emitter, HonestNode):
             block = emitter.current_block
             height = emitter.current_height
+
         # emitter is selfish
         else:
             block = emitter.block_to_broadcast_to_honest
             height = emitter.height_to_broadcast_to_honest
 
-        # if "my" current height is larger than the emitter's, reject block (increase "failed_gossip" counter of the emitter's block)
+        # if "my" current height is larger or equal than the emitter's, reject block (increase "failed_gossip" counter of the emitter's block)
         if self.current_height >= height:
             self.block_tree[block]["failed_gossip"] += 1
             if self.verbose:
                 print(
-                    "---- Gossip failed: node {} rejected block {} (height: {}, miner: {}) from node {}, and continues mining on {} (height: {})".format(
+                    "---- Gossip failed: node {} rejected block {} from node {} (height: {}, miner: {}) --> continues mining on block {} (height: {})".format(
                         self.id,
                         block,
+                        emitter.id,
                         height,
                         emitter.block_tree[block]["miner"],
-                        emitter.id,
                         self.current_block,
                         self.current_height,
                     )
@@ -82,12 +84,12 @@ class HonestNode:
 
             if self.verbose:
                 print(
-                    "Node {} adopts block {} (height: {}, miner: {}) from node {}".format(
+                    "---- node {} adopted block {} from node {} (height: {}, miner: {})".format(
                         self.id,
                         self.current_block,
+                        emitter.id,
                         self.current_height,
                         self.block_tree[self.current_block]["miner"],
-                        emitter.id,
                     )
                 )
             return True
