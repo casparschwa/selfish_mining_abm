@@ -128,10 +128,10 @@ class GillespieBlockchain:
         # If the emitter is not gossiping anymore (after having gossiped to current recipient), then remove emitter from set of gossiping nodes.
         if not self.nodes[emitter].is_gossiping():
             self.gossiping_nodes.remove(emitter)
+            # if emitter was selfish and informing, stop informing now
+            if isinstance(self.nodes[emitter], selfish_node.SelfishNode):
+                self.nodes[emitter].informing = False
 
-        #
-        #  IMPORTANT NOTE: WHY DO WE NEED TO DO THIS?
-        #
         # If recipient is gossiping, add recipient to gossiping node set
         if self.nodes[recipient].is_gossiping():
             self.gossiping_nodes.add(recipient)
