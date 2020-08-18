@@ -72,6 +72,11 @@ class SelfishNode:
         # # # self.block_to_broadcast_to_honest = self.current_block
         # # # self.height_to_broadcast_to_honest = self.current_height
 
+    def __adopt_received_information(self, emitter):
+        self.public_max_height = emitter.public_max_height
+        self.block_to_broadcast_to_honest = emitter.block_to_broadcast_to_honest
+        self.height_to_broadcast_to_honest = emitter.height_to_broadcast_to_honest
+
     def __reject_received_block(self, emitter):
         # reject received block
         self.block_tree[emitter.current_height]["failed_gossip"] += 1
@@ -175,19 +180,23 @@ class SelfishNode:
             # I have not heard about this block before
             if emitter.public_max_height > self.public_max_height:
                 # adopt information
-                self.public_max_height = emitter.public_max_height
-                self.block_to_broadcast_to_honest = emitter.block_to_broadcast_to_honest
-                self.height_to_broadcast_to_honest = (
-                    emitter.height_to_broadcast_to_honest
-                )
+                self.__adopt_received_information(emitter)
                 # start informing your peers
                 self.informing = True
                 self.__broadcast_to_honest_inform_selfish(except_emitter=emitter.id)
-                print("node {} is starting to inform its selfish peers".format(self.id))
+                print(
+                    "node {} received information from node {}".format(
+                        self.id, emitter.id
+                    )
+                )
                 return
             # I know about this block already
             else:
-                print("node {} is already informing its selfish peers".format(self.id))
+                print(
+                    "node {} received information from node {}, but is already informing its selfish peers".format(
+                        self.id, emitter.id
+                    )
+                )
                 return
 
         ## check wether received block was mined by a selfish or honest node

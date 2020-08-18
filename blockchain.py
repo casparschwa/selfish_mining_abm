@@ -59,9 +59,9 @@ class GillespieBlockchain:
                 )
 
         self.net_p2p = net_p2p  # network with certain degree distribution
-        # NOTE: we need to add edges between all selfish miners so that they can communicate
+        # NOTE: Assumption is that all selfish miners selfish miners are connected so we manually add edges between all selfish nodes.
         edge_tuples_list = [
-            (i, j) for i in self.selfish_index for j in self.selfish_index
+            (i, j) for i in self.selfish_index for j in self.selfish_index if i != j
         ]  # list of all possible tuples of selfish nodes
         self.net_p2p.add_edges_from(
             edge_tuples_list
@@ -119,6 +119,12 @@ class GillespieBlockchain:
         # pick random recipient from set of nodes that have not been gossiped to
         recipient = np.random.choice(list(self.nodes[emitter].non_gossiped_to))
 
+        # # # assert (
+        # # #     emitter == recipient
+        # # # ), "emitter id: {}; emitter non_gossiped_to: {}".format(
+        # # #     self.nodes[emitter].id, self.nodes[emitter].non_gossiped_to
+        # # # )
+
         # removes the recipient from the non_gossiped set for the emitter
         self.nodes[emitter].gossiped_to(recipient)
 
@@ -128,7 +134,7 @@ class GillespieBlockchain:
         # If the emitter is not gossiping anymore (after having gossiped to current recipient), then remove emitter from set of gossiping nodes.
         if not self.nodes[emitter].is_gossiping():
             self.gossiping_nodes.remove(emitter)
-            # if emitter was selfish and informing, stop informing now
+            # if emitter was selfish and informing, stop informing
             if isinstance(self.nodes[emitter], selfish_node.SelfishNode):
                 self.nodes[emitter].informing = False
 
