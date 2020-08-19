@@ -18,8 +18,8 @@ class GillespieBlockchain:
             print("GillespieBlockchain() instance created")
 
         # make sure input data matches
-        assert net_p2p.number_of_nodes() == len(hashing_power) == len(is_selfish)
-        assert sum(hashing_power) == 1
+        # assert net_p2p.number_of_nodes() == len(hashing_power) == len(is_selfish)
+        # assert sum(hashing_power) == 1
 
         self.block_tree = blocktree.BlockTree()  # initialize block tree
 
@@ -98,6 +98,19 @@ class GillespieBlockchain:
         """
         This function handles a mining event. 
         """
+        if self.verbose:
+            nodes_still_gossiping = []
+            for n in self.gossiping_nodes:
+                nodes_still_gossiping.append(
+                    (self.nodes[n].id, self.nodes[n].non_gossiped_to)
+                )
+            if len(nodes_still_gossiping) != 0:
+                print(
+                    "-------------------------\nNODES STILL GOSSIPING JUST BEFORE NEW MINING EVENT: {} \n-------------------------".format(
+                        nodes_still_gossiping
+                    )
+                )
+
         # pick miner of new block and call mine_block() function
         miner = np.random.choice(self.hashing_nodes, p=self.hashing_power)
         self.nodes[miner].mine_block(self.time)
@@ -148,8 +161,9 @@ class GillespieBlockchain:
             self.gossiping_nodes.remove(recipient)
 
     def snapshot(self):
-
-        string = "-------------------------\nSNAPSHOT \n"
+        string = "Time: {}\n-------------------------\nSNAPSHOT \n".format(
+            round(self.time, 3)
+        )
         for node in self.nodes:
             string += "node {} ({}) is mining on block {} (height {}) \n".format(
                 node.id,

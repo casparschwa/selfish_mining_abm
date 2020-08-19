@@ -16,7 +16,6 @@ class Block:
         failed_gossip=0,
         main_chain=True,
     ):
-        print("Block() instance created")
         self.id = id  # block id
         self.miner = miner  # miner id
         self.miner_is_selfish = miner_is_selfish  # block mined by selfish/honest node.

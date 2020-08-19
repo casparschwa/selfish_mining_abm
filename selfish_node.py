@@ -73,6 +73,8 @@ class SelfishNode:
         # # # self.height_to_broadcast_to_honest = self.current_height
 
     def __adopt_received_information(self, emitter):
+        # adopt information
+        # importantly we must update the public max height as well!
         self.public_max_height = emitter.public_max_height
         self.block_to_broadcast_to_honest = emitter.block_to_broadcast_to_honest
         self.height_to_broadcast_to_honest = emitter.height_to_broadcast_to_honest
@@ -80,10 +82,6 @@ class SelfishNode:
     def __reject_received_block(self, emitter):
         # reject received block
         self.block_tree[emitter.current_height]["failed_gossip"] += 1
-
-        # # # ## reset block_to_broadcast_to_honest to ensure node always sends correct block to HONEST NODES
-        # # # self.block_to_broadcast_to_honest = self.current_block
-        # # # self.height_to_broadcast_to_honest = self.current_height
 
     def __override_received_block(self):
         """
@@ -184,19 +182,26 @@ class SelfishNode:
                 # start informing your peers
                 self.informing = True
                 self.__broadcast_to_honest_inform_selfish(except_emitter=emitter.id)
-                print(
-                    "node {} received information from node {}".format(
-                        self.id, emitter.id
+                if self.verbose:
+                    print(
+                        "node {} received information from node {}".format(
+                            self.id, emitter.id
+                        )
                     )
-                )
                 return
             # I know about this block already
             else:
-                print(
-                    "node {} received information from node {}, but is already informing its selfish peers".format(
-                        self.id, emitter.id
+                if self.verbose:
+                    # print(
+                    #     "emitter public max height: {}, recipient public max height: {}".format(
+                    #         emitter.public_max_height, self.public_max_height
+                    #     )
+                    # )
+                    print(
+                        "node {} received information from node {}, but is already informing its selfish peers".format(
+                            self.id, emitter.id
+                        )
                     )
-                )
                 return
 
         ## check wether received block was mined by a selfish or honest node

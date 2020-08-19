@@ -1,14 +1,14 @@
 class HonestNode:
     def __init__(self, id, block_tree, eta, current_block=0, verbose=False):
 
-        if verbose:
+        self.verbose = verbose
+        if self.verbose:
             print("HonestNode() instance created")
 
         self.id = id
         self.block_tree = block_tree
         self.eta = eta
         self.current_block = current_block
-        self.verbose = verbose
 
         self.neighbors = set()
         self.non_gossiped_to = set()

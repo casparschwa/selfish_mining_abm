@@ -5,9 +5,6 @@ import block
 
 class BlockTree:
     def __init__(self):
-
-        print("BlockTree() instance created")
-
         self.tree = nx.DiGraph()  # empty network, gets filled with block creation
         self.tree.add_node(0)  # add one node (genesis block)
 
