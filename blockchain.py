@@ -11,7 +11,7 @@ class GillespieBlockchain:
     # one more variable should be passed to __init__(), e.g. is_selfish: add a vector with booleans. This indicated whether a node is honest or selfish.
     #%%%%
     def __init__(
-        self, net_p2p, is_selfish, hashing_power, tau_nd, tau_mine=1.0, verbose=False
+        self, net_p2p, is_selfish, hashing_power, tau_nd, tau_mine=10, verbose=False
     ):
         self.verbose = verbose
         if verbose:
@@ -60,13 +60,12 @@ class GillespieBlockchain:
 
         self.net_p2p = net_p2p  # network with certain degree distribution
         # NOTE: Assumption is that all selfish miners selfish miners are connected so we manually add edges between all selfish nodes.
+        # list of all possible tuples of selfish nodes (except edges with oneself)
         edge_tuples_list = [
             (i, j) for i in self.selfish_index for j in self.selfish_index if i != j
-        ]  # list of all possible tuples of selfish nodes
-        self.net_p2p.add_edges_from(
-            edge_tuples_list
-        )  # adds edges between all selfish nodes
-        #%%%%
+        ]
+        # adds edges between all selfish nodes
+        self.net_p2p.add_edges_from(edge_tuples_list)
 
         self.gossiping_nodes = set()  # initialize an empty set for gossiping nodes
 

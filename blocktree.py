@@ -20,6 +20,7 @@ class BlockTree:
         self.attributes[0] = {
             "id": 0,
             "miner": "genesis",
+            "miner_is_selfish": None,
             "height": int(0),
             "time": float(0.0),
             "last_update": float(0.0),
@@ -200,7 +201,8 @@ class BlockTree:
 
     def __getitem__(self, blk):
         """
-        This function returns the dict of attributes of the block (blk) passed to function.
+        This function returns the dict of attributes of the block (blk) passed to function. This allows to access it from e.g. blockchain.py in a much easier way:
+        e.g. --> self.nodes[i]["height"] instead of self.nodes.attributes[i]["height]
         """
         assert blk < self.n_blocks
         return self.attributes[blk]
@@ -210,3 +212,109 @@ class BlockTree:
         This function returns the total number of blocks created.
         """
         return self.n_blocks
+
+    def results(self):
+        """
+        ONLY CALL AT END OF SIMULATION AND AFTER HAVING TAGGED THE MAIN CHAIN
+        """
+
+        # tag main chain, otherwise results are not obtainable
+        self.tag_main_chain()
+
+        # Booleans for whether block is on main chain.
+        is_main_chain = np.array(
+            [self.attributes[n]["main_chain"] for n in self.attributes], dtype=np.bool,
+        )
+
+        # array of propagation time of blocks
+        # (NOTE: orphan blocks have very short prop. times because they tend to reach few nodes)
+        propagation_time = np.array(
+            [
+                self.attributes[n]["last_update"] - self.attributes[n]["time"]
+                for n in self.tree.nodes()
+            ]
+        )
+        # array of number of reached nodes for each block
+        miners = np.array(
+            [self.attributes[n]["reached_nodes"] for n in self.tree.nodes()]
+        )
+        # array of number of failed gossip for each block
+        failed_gossip = np.array(
+            [self.attributes[n]["failed_gossip"] for n in self.tree.nodes()]
+        )
+        # array of booleans whether block was mined by selfish (True) or honest (False)
+        selfish = np.array(
+            [self.attributes[n]["miner_is_selfish"] for n in self.tree.nodes()]
+        )
+
+        reached_nodes = miners.copy()
+
+        # CALCULATE ORPHAN RATE
+        # total number of blocks created
+        num_blocks = self.tree.number_of_nodes()
+        # number of blocks part of main chain
+        num_blocks_main_chain = np.count_nonzero(is_main_chain)
+        # number of orpahned blocks
+        num_blocks_orphaned = num_blocks - num_blocks_main_chain
+        # rate of orphaned blocks
+        orphaned_block_rate = float(num_blocks_orphaned / num_blocks)
+        # number of selfish/honest blocks
+        num_blocks_selfish = np.count_nonzero(selfish)
+        num_blocks_honest = num_blocks - num_blocks_selfish
+
+        # PROPAGATION TIMES CALUCLATIONS
+        # # # # # array of booleans for whether a block has propagated fully or not
+        # # # # fully_propagated_blocks = reached_nodes == lcc_size
+        # # # # # array of propagation times of blocks that have fully propagated
+        # # # # fully_propagated_times = propagation_time[fully_propagated_blocks]
+
+        # # # # # mean/median/min/max time for FULLY PROPAGATED blocks
+        # # # # mean_time_fully_propagated = np.mean(fully_propagated_times)
+        # # # # median_time_fully_propagated = np.median(fully_propagated_times)
+        # # # # min_time_fully_propagated = np.min(fully_propagated_times)
+        # # # # max_time_fully_propagated = np.max(fully_propagated_times)
+
+        # mean/median/min/max time of propagation for ALL blocks
+        mean_time_propagation = np.mean(propagation_time)
+        median_time_propagation = np.median(propagation_time)
+        min_time_propagatation = np.min(propagation_time)
+        max_time_propagation = np.max(propagation_time)
+
+        # MINING REWARDS
+        selfish_revenue = 0
+        honest_revenue = 0
+
+        for block in self.tree.nodes():
+            if (
+                self.attributes[block]["main_chain"] == True
+                and self.attributes[block]["miner_is_selfish"] == True
+            ):
+                selfish_revenue += 1
+            if (
+                self.attributes[block]["main_chain"] == True
+                and self.attributes[block]["miner_is_selfish"] == False
+            ):
+                honest_revenue += 1
+
+        relative_selfish_revenue = selfish_revenue / (selfish_revenue + honest_revenue)
+
+        data_point = [
+            num_blocks,
+            num_blocks_selfish,
+            num_blocks_honest,
+            num_blocks_main_chain,
+            num_blocks_orphaned,
+            selfish_revenue,
+            honest_revenue,
+            relative_selfish_revenue,
+            # mean_time_fully_propagated,
+            # median_time_fully_propagated,
+            # min_time_fully_propagated,
+            # max_time_fully_propagated,
+            mean_time_propagation,
+            median_time_propagation,
+            min_time_propagatation,
+            max_time_propagation,
+        ]
+
+        return data_point
