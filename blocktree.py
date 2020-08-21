@@ -271,13 +271,13 @@ class BlockTree:
         # # # # # mean/median/min/max time for FULLY PROPAGATED blocks
         # # # # mean_time_fully_propagated = np.mean(fully_propagated_times)
         # # # # median_time_fully_propagated = np.median(fully_propagated_times)
-        # # # # min_time_fully_propagated = np.min(fully_propagated_times)
+        # # # # min_time_fully_propagated = min(i for i in fully_propagated_times if i>0)
         # # # # max_time_fully_propagated = np.max(fully_propagated_times)
 
         # mean/median/min/max time of propagation for ALL blocks
         mean_time_propagation = np.mean(propagation_time)
         median_time_propagation = np.median(propagation_time)
-        min_time_propagatation = np.min(propagation_time)
+        min_time_propagatation = min(i for i in propagation_time if i > 0)
         max_time_propagation = np.max(propagation_time)
 
         # MINING REWARDS

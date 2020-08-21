@@ -27,8 +27,11 @@ def set_up_model(number_of_nodes, number_selfish_nodes, alpha, number_of_neighbo
     number_of_nodes = len(net_p2p)
     number_honest_nodes = number_of_nodes - number_selfish_nodes
     total_hashing_power_honest = 1 - alpha
-    hashing_power_selfish = np.random.random(number_selfish_nodes)
-    hashing_power_selfish /= sum(hashing_power_selfish) / alpha
+    if alpha == 0:
+        hashing_power_selfish = np.zeros(number_selfish_nodes)
+    else:
+        hashing_power_selfish = np.random.random(number_selfish_nodes)
+        hashing_power_selfish /= sum(hashing_power_selfish) / alpha
     hashing_power_honest = np.random.random(number_honest_nodes)
     hashing_power_honest /= sum(hashing_power_honest) / total_hashing_power_honest
     hashing_power = np.append(hashing_power_selfish, hashing_power_honest)
@@ -49,24 +52,24 @@ def set_up_model(number_of_nodes, number_selfish_nodes, alpha, number_of_neighbo
 ###################################
 
 # TO SPECIFY
-number_of_nodes = 100
+number_of_nodes = 200
 number_selfish_nodes = 10
 number_honest_nodes = number_of_nodes - number_selfish_nodes
 
 # total hashing power selfish nodes
-alphas = np.linspace(0, 0.5, 11)
+alphas = np.linspace(0, 0.5, 21)
 
 # tau_nd is similar to gamma in original paper
-gammas = np.linspace(0.00167, 0.0167, 10)
+gammas = np.array([0.001, 0.01, 0.1, 1])
 
 # for random gnm graph
-number_of_neighbors = 2
+number_of_neighbors = 4
 
 # minutes in simulation world
 simulating_time = 1000
 
 # average results over how many repititons?
-repititions = 2
+repititions = 5
 
 
 # DATA COLLECTION STUFF
@@ -100,13 +103,18 @@ for rep in trange(repititions, desc="Averaging loop", leave=False):
 
     ticker = 0
 
-    for alpha in tqdm(alphas, desc="Alpha loop", leave=False):
+    for tau_nd in tqdm(gammas, desc="Gamma loop", leave=False):
 
-        for tau_nd in tqdm(gammas, desc="Gamma loop", leave=False):
+        for alpha in tqdm(alphas, desc="Alpha loop", leave=False):
 
-            model_setup = set_up_model(
-                number_of_nodes, number_selfish_nodes, alpha, number_of_neighbors
-            )
+            if alpha == 0:
+                model_setup = set_up_model(
+                    number_of_nodes, 0, alpha, number_of_neighbors
+                )
+            else:
+                model_setup = set_up_model(
+                    number_of_nodes, number_selfish_nodes, alpha, number_of_neighbors
+                )
 
             model = GillespieBlockchain(
                 model_setup[0], model_setup[1], model_setup[2], tau_nd, verbose=False

@@ -7,3 +7,6 @@ playground2.py
 .vscode
 venv/
 *.csv
+archive/
+jupyter_testing_simple.ipynb
+*.png
