@@ -1,9 +1,12 @@
+import logging
+
+
 class SelfishNode:
     def __init__(self, id, block_tree, eta, current_block=0, verbose=False):
 
         self.verbose = verbose
         if self.verbose:
-            print("SelfishNode() instance created")
+            logging.info("SelfishNode() instance created")
 
         self.id = id
         self.block_tree = block_tree
@@ -183,7 +186,7 @@ class SelfishNode:
                 self.informing = True
                 self.__broadcast_to_honest_inform_selfish(except_emitter=emitter.id)
                 if self.verbose:
-                    print(
+                    logging.info(
                         "node {} received information from node {}".format(
                             self.id, emitter.id
                         )
@@ -192,12 +195,7 @@ class SelfishNode:
             # I know about this block already
             else:
                 if self.verbose:
-                    # print(
-                    #     "emitter public max height: {}, recipient public max height: {}".format(
-                    #         emitter.public_max_height, self.public_max_height
-                    #     )
-                    # )
-                    print(
+                    logging.info(
                         "node {} received information from node {}, but is already informing its selfish peers".format(
                             self.id, emitter.id
                         )
@@ -240,7 +238,7 @@ class SelfishNode:
                     self.height_to_broadcast_to_honest = self.current_height
 
                     if self.verbose:
-                        print(
+                        logging.info(
                             "SCENARIO (B): node {} adopted block {} from node {} (height: {}, miner: {})".format(
                                 self.id,
                                 self.current_block,
@@ -267,7 +265,7 @@ class SelfishNode:
                     )
 
                     if self.verbose:
-                        print(
+                        logging.info(
                             "SCENARIO (A): node {} adopted block {} from node {} (height: {}, miner: {})".format(
                                 self.id,
                                 self.current_block,
@@ -316,7 +314,7 @@ class SelfishNode:
                     self.height_to_broadcast_to_honest = self.current_height
 
                     if self.verbose:
-                        print(
+                        logging.info(
                             "SCENARIO (N/A): node {} adopted block {} from node {} (height: {}, miner: {}), throwing away honest block of equal height".format(
                                 self.id,
                                 self.current_block,
@@ -332,7 +330,7 @@ class SelfishNode:
                     self.__reject_received_block(emitter)
 
                     if self.verbose:
-                        print(
+                        logging.info(
                             "SCENARIO (N/A): node {} rejected block {} from node {} (height: {}, miner: {})".format(
                                 self.id,
                                 emitter.current_block,
@@ -350,7 +348,7 @@ class SelfishNode:
                 self.block_tree[emitter.current_height]["failed_gossip"] += 1
 
                 if self.verbose:
-                    print(
+                    logging.info(
                         "SCENARIO (N/A): node {} rejected block {} from node {} (height: {}, miner: {})".format(
                             self.id,
                             emitter.current_block,
@@ -392,7 +390,7 @@ class SelfishNode:
                     self.height_to_broadcast_to_honest = self.current_height
 
                     if self.verbose:
-                        print(
+                        logging.info(
                             "SCENARIO (C/D/E): node {} adopted block {} from node {} (height: {}, miner: {})".format(
                                 self.id,
                                 self.current_block,
@@ -421,7 +419,7 @@ class SelfishNode:
                     self.height_to_broadcast_to_honest = self.current_height
 
                     if self.verbose:
-                        print(
+                        logging.info(
                             "SCENARIO (F): node {} rejected block {} from node {} (height: {}, miner: {}) & published block {} (height: {}) to ALL nodes".format(
                                 self.id,
                                 emitter.current_block,
@@ -452,7 +450,7 @@ class SelfishNode:
                     self.height_to_broadcast_to_honest = self.current_height
 
                     if self.verbose:
-                        print(
+                        logging.info(
                             "SCENARIO (G): node {} rejected block {} from node {} (height: {}, miner: {}) & published block {} (height: {}) to HONEST nodes".format(
                                 self.id,
                                 emitter.current_block,
@@ -482,7 +480,7 @@ class SelfishNode:
                     self.__broadcast_to_honest_inform_selfish(except_emitter=emitter.id)
 
                     if self.verbose:
-                        print(
+                        logging.info(
                             "SCENARIO (H): node {} rejected block {} from node {} (height: {}, miner: {}) & published block {} (height: {}) to HONEST nodes".format(
                                 self.id,
                                 emitter.current_block,
@@ -502,7 +500,7 @@ class SelfishNode:
                 self.__reject_received_block(emitter)
 
                 if self.verbose:
-                    print(
+                    logging.info(
                         "SCENARIO (NA): node {} rejected block {} from node {} (height: {}, miner: {}), because it knew about it already.".format(
                             self.id,
                             emitter.current_block,

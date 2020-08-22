@@ -1,9 +1,12 @@
+import logging
+
+
 class HonestNode:
     def __init__(self, id, block_tree, eta, current_block=0, verbose=False):
 
         self.verbose = verbose
         if self.verbose:
-            print("HonestNode() instance created")
+            logging.info("HonestNode() instance created")
 
         self.id = id
         self.block_tree = block_tree
@@ -58,7 +61,7 @@ class HonestNode:
         if self.current_height >= height:
             self.block_tree[block]["failed_gossip"] += 1
             if self.verbose:
-                print(
+                logging.info(
                     "---- Gossip failed: node {} rejected block {} from node {} (height: {}, miner: {}) --> continues mining on block {} (height: {})".format(
                         self.id,
                         block,
@@ -83,7 +86,7 @@ class HonestNode:
             self.non_gossiped_to.remove(emitter.id)
 
             if self.verbose:
-                print(
+                logging.info(
                     "---- node {} adopted block {} from node {} (height: {}, miner: {})".format(
                         self.id,
                         self.current_block,

@@ -3,8 +3,20 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import os
+import time
+import logging
 from tqdm import tqdm, trange
 from blockchain import GillespieBlockchain
+
+
+########################
+#### Set up logging ####
+fname = "blockchain.log"
+path = os.path.join(os.getcwd(), "logs/{}".format(fname))
+logging.basicConfig(
+    filename=path, level=logging.DEBUG, filemode="w", format="%(message)s",
+)
+########################
 
 
 def set_up_model(number_of_nodes, number_selfish_nodes, alpha, number_of_neighbors):
@@ -49,8 +61,8 @@ def set_up_model(number_of_nodes, number_selfish_nodes, alpha, number_of_neighbo
 ###################################
 
 # TO SPECIFY
-number_of_nodes = 100
-number_selfish_nodes = 10
+number_of_nodes = 10
+number_selfish_nodes = 2
 number_honest_nodes = number_of_nodes - number_selfish_nodes
 
 # total hashing power selfish nodes
@@ -63,10 +75,10 @@ gammas = np.array([0.001, 0.01, 0.1, 1.0])
 number_of_neighbors = 1
 
 # minutes in simulation world
-simulating_time = 1000
+simulating_time = 500
 
 # average results over how many repititons?
-repititions = 2
+repititions = 1
 
 
 # DATA COLLECTION STUFF
@@ -96,6 +108,8 @@ columns = [
 ## list_of_lists = [[sim.storage()],[sim.storage()],...,[sim.storage()]] -> list of (alpha * gamma) sim.storage() lists
 data_list = [[0] * len(columns) for i in range(len(alphas) * len(gammas))]
 
+start = time.time()
+
 for rep in trange(repititions, desc="Averaging loop", leave=False):
 
     ticker = 0
@@ -114,7 +128,7 @@ for rep in trange(repititions, desc="Averaging loop", leave=False):
                 )
 
             model = GillespieBlockchain(
-                model_setup[0], model_setup[1], model_setup[2], tau_nd, verbose=False
+                model_setup[0], model_setup[1], model_setup[2], tau_nd, verbose=True
             )
             while model.time < simulating_time:
                 model.next_event()
@@ -131,14 +145,19 @@ for rep in trange(repititions, desc="Averaging loop", leave=False):
 
             ticker += 1
 
+runtime = time.time() - start
+
+print(
+    "Simulation took {} minutes (in hours: {})".format(
+        round(runtime / 60, 2), round(runtime / (60 * 60), 2)
+    )
+)
+
 # average the data
 data_list = [[i / repititions for i in j] for j in data_list]
-
 
 # save data
 data = pd.DataFrame(data_list, columns=columns)
 filename = "test.csv"
-root = str(os.getcwd())
-subdir = "output/{}".format(filename)
-path = os.path.join(root, subdir)
+path = os.path.join(str(os.getcwd()), "output/{}".format(filename))
 data.to_csv(path_or_buf=path)

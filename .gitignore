@@ -4,9 +4,11 @@ __pycache__
 output/
 venv/
 archive/
+logs/
 *.ipynb
 *.csv
 *.png
+*.log
 test_results.py
 test_test.py
 playground2.py

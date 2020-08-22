@@ -1,6 +1,6 @@
 import networkx as nx
 import numpy as np
-import block
+from block import Block
 
 
 class BlockTree:
@@ -47,7 +47,7 @@ class BlockTree:
         new_height = self.attributes[parent_block]["height"] + 1
 
         # call Block class from block.py
-        self.attributes[new_block] = block.Block(
+        self.attributes[new_block] = Block(
             id=new_block,
             miner=miner,
             miner_is_selfish=miner_is_selfish,

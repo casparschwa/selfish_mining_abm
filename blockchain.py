@@ -1,9 +1,10 @@
 import networkx as nx
 import numpy as np
-import blocktree
-import block
-import honest_node
-import selfish_node
+import logging
+import os
+from blocktree import BlockTree
+from honest_node import HonestNode
+from selfish_node import SelfishNode
 
 
 class GillespieBlockchain:
@@ -14,14 +15,14 @@ class GillespieBlockchain:
         self, net_p2p, is_selfish, hashing_power, tau_nd, tau_mine=10, verbose=False
     ):
         self.verbose = verbose
-        if verbose:
-            print("GillespieBlockchain() instance created")
+        if self.verbose:
+            logging.info("GillespieBlockchain() instance created")
 
         # make sure input data matches
         # assert net_p2p.number_of_nodes() == len(hashing_power) == len(is_selfish)
         # assert sum(hashing_power) == 1
 
-        self.block_tree = blocktree.BlockTree()  # initialize block tree
+        self.block_tree = BlockTree()  # initialize block tree
 
         #%%%%
         # array of booleans: True -> node is selfish / False -> node is honest
@@ -40,7 +41,7 @@ class GillespieBlockchain:
         for index, selfish in enumerate(self.is_selfish):
             if selfish == True:
                 self.nodes.append(
-                    selfish_node.SelfishNode(
+                    SelfishNode(
                         index,
                         self.block_tree,
                         eta=hashing_power[index],
@@ -50,7 +51,7 @@ class GillespieBlockchain:
                 )
             else:
                 self.nodes.append(
-                    honest_node.HonestNode(
+                    HonestNode(
                         index,
                         self.block_tree,
                         eta=hashing_power[index],
@@ -104,7 +105,7 @@ class GillespieBlockchain:
                     (self.nodes[n].id, self.nodes[n].non_gossiped_to)
                 )
             if len(nodes_still_gossiping) != 0:
-                print(
+                logging.warning(
                     "-------------------------\nNODES STILL GOSSIPING JUST BEFORE NEW MINING EVENT: {} \n-------------------------".format(
                         nodes_still_gossiping
                     )
@@ -147,7 +148,7 @@ class GillespieBlockchain:
         if not self.nodes[emitter].is_gossiping():
             self.gossiping_nodes.remove(emitter)
             # if emitter was selfish and informing, stop informing
-            if isinstance(self.nodes[emitter], selfish_node.SelfishNode):
+            if isinstance(self.nodes[emitter], SelfishNode):
                 self.nodes[emitter].informing = False
 
         # If recipient is gossiping, add recipient to gossiping node set
@@ -160,18 +161,16 @@ class GillespieBlockchain:
             self.gossiping_nodes.remove(recipient)
 
     def snapshot(self):
-        string = "Time: {}\n-------------------------\nSNAPSHOT \n".format(
-            round(self.time, 3)
-        )
+        string = "------------------------- SNAPSHOT -------------------------\n"
         for node in self.nodes:
             string += "node {} ({}) is mining on block {} (height {}) \n".format(
                 node.id,
-                "selfish" if self.is_selfish[node.id] else "honest",
+                "selfish" if self.is_selfish[node.id] else "honest ",
                 node.current_block,
                 node.current_height,
             )
-        string += "-------------------------"
-        print(string)
+        string += "------------------------------------------------------------"
+        logging.info(string)
 
     def next_event(self):
         """
@@ -211,7 +210,7 @@ class GillespieBlockchain:
             # if event is mining
             self.__mine_event()
 
-            # print snapshots
+            # log snapshots
             if self.verbose:
                 self.snapshot()
         else:
