@@ -2,12 +2,9 @@ import networkx as nx
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
+import os
 from tqdm import tqdm, trange
 from blockchain import GillespieBlockchain
-
-
-def collect_results():
-    pass
 
 
 def set_up_model(number_of_nodes, number_selfish_nodes, alpha, number_of_neighbors):
@@ -52,7 +49,7 @@ def set_up_model(number_of_nodes, number_selfish_nodes, alpha, number_of_neighbo
 ###################################
 
 # TO SPECIFY
-number_of_nodes = 200
+number_of_nodes = 100
 number_selfish_nodes = 10
 number_honest_nodes = number_of_nodes - number_selfish_nodes
 
@@ -60,16 +57,16 @@ number_honest_nodes = number_of_nodes - number_selfish_nodes
 alphas = np.linspace(0, 0.5, 21)
 
 # tau_nd is similar to gamma in original paper
-gammas = np.array([0.001, 0.01, 0.1, 1])
+gammas = np.array([0.001, 0.01, 0.1, 1.0])
 
 # for random gnm graph
-number_of_neighbors = 4
+number_of_neighbors = 1
 
 # minutes in simulation world
 simulating_time = 1000
 
 # average results over how many repititons?
-repititions = 5
+repititions = 2
 
 
 # DATA COLLECTION STUFF
@@ -138,5 +135,10 @@ for rep in trange(repititions, desc="Averaging loop", leave=False):
 data_list = [[i / repititions for i in j] for j in data_list]
 
 
+# save data
 data = pd.DataFrame(data_list, columns=columns)
-data.to_csv("test_run.csv")
+filename = "test.csv"
+root = str(os.getcwd())
+subdir = "output/{}".format(filename)
+path = os.path.join(root, subdir)
+data.to_csv(path_or_buf=path)
