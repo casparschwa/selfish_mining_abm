@@ -55,6 +55,7 @@ class GillespieBlockchain:
                         index,
                         self.block_tree,
                         eta=hashing_power[index],
+                        current_block=0,
                         verbose=self.verbose,
                     )
                 )
@@ -161,7 +162,14 @@ class GillespieBlockchain:
             self.gossiping_nodes.remove(recipient)
 
     def snapshot(self):
-        string = "------------------------- SNAPSHOT -------------------------\n"
+        # minus 1, because block_tree.n_blocks starts at 1 (genesis block)
+        latest_block = self.block_tree.n_blocks - 1
+        miner_of_latest_block = self.block_tree[latest_block]["miner"]
+        string = "------------------------- SNAPSHOT -------------------------\nNode {} ({}) mined a new block (id: {})\n------------------------------------------------------------\n".format(
+            miner_of_latest_block,
+            "selfish" if self.is_selfish[miner_of_latest_block] else "honest",
+            latest_block,
+        )
         for node in self.nodes:
             string += "node {} ({}) is mining on block {} (height {}) \n".format(
                 node.id,

@@ -204,7 +204,7 @@ class BlockTree:
         This function returns the dict of attributes of the block (blk) passed to function. This allows to access it from e.g. blockchain.py in a much easier way:
         e.g. --> self.nodes[i]["height"] instead of self.nodes.attributes[i]["height]
         """
-        assert blk < self.n_blocks
+        assert blk <= self.n_blocks
         return self.attributes[blk]
 
     def __len__(self):
