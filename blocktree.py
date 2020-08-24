@@ -243,9 +243,15 @@ class BlockTree:
             [self.attributes[n]["failed_gossip"] for n in self.tree.nodes()]
         )
         # array of booleans whether block was mined by selfish (True) or honest (False)
-        selfish = np.array(
+        is_selfish = np.array(
             [self.attributes[n]["miner_is_selfish"] for n in self.tree.nodes()]
         )
+
+        # array of booleans whether block was mined by honest AND is in main chain
+        is_honest = np.logical_not(is_selfish)
+        # because genesis block is None, np.logical_not() flips it to True.
+        is_honest[0] = None
+        is_honest_main = np.logical_and(is_honest, is_main_chain)
 
         reached_nodes = miners.copy()
 
@@ -259,7 +265,7 @@ class BlockTree:
         # rate of orphaned blocks
         orphaned_block_rate = float(num_blocks_orphaned / num_blocks)
         # number of selfish/honest blocks
-        num_blocks_selfish = np.count_nonzero(selfish)
+        num_blocks_selfish = np.count_nonzero(is_selfish)
         num_blocks_honest = num_blocks - num_blocks_selfish
 
         # PROPAGATION TIMES CALUCLATIONS
@@ -273,6 +279,12 @@ class BlockTree:
         # # # # median_time_fully_propagated = np.median(fully_propagated_times)
         # # # # min_time_fully_propagated = min(i for i in fully_propagated_times if i>0)
         # # # # max_time_fully_propagated = np.max(fully_propagated_times)
+
+        # mean/median/min/max time of propagation for honest main chain blocks (-> time if network were to behave normally)
+        mean_time_honest_main_propagation = np.mean(propagation_time)
+        median_time_honest_main_propagation = np.median(propagation_time)
+        min_time_honest_main_propagatation = min(i for i in propagation_time if i > 0)
+        max_time_honest_main_propagation = np.max(propagation_time)
 
         # mean/median/min/max time of propagation for ALL blocks
         mean_time_propagation = np.mean(propagation_time)
@@ -307,6 +319,10 @@ class BlockTree:
             selfish_revenue,
             honest_revenue,
             relative_selfish_revenue,
+            mean_time_honest_main_propagation,
+            median_time_honest_main_propagation,
+            min_time_honest_main_propagatation,
+            max_time_honest_main_propagation,
             # mean_time_fully_propagated,
             # median_time_fully_propagated,
             # min_time_fully_propagated,

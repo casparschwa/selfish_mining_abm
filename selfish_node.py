@@ -165,7 +165,7 @@ class SelfishNode:
     def __broadcast_to_honest_inform_selfish(
         self, except_emitter=None, except_miner=None
     ):
-        # broadcast to HONEST NODES & inform SELFISH NODES (ALL NODES receive either block or information)
+        # broadcast to HONEST NODES & inform SELFISH NODES (ALL NODES receive either block (honest) or information about the block (honest))
         self.non_gossiped_to = self.neighbors.copy()
         # remove emitter from non_gossiped_to set if except_emitter argument is passed
         if except_emitter is not None:
@@ -275,27 +275,13 @@ class SelfishNode:
                             )
                         )
 
-                    # # # assert (
-                    # # #     emitter.id in self.selfish_neighbors
-                    # # # ), "receiver: {}, emitter: {}, selfish neighbors: {}".format(
-                    # # #     self.id, emitter.id, self.selfish_neighbors
-                    # # # )
-                    # # # assert (
-                    # # #     self.block_tree[self.current_block]["miner"]
-                    # # #     in self.selfish_neighbors
-                    # # # ), "receiver: {}, miner: {}, selfish neighbors: {}".format(
-                    # # #     self.id,
-                    # # #     self.block_tree[self.current_block]["miner"],
-                    # # #     self.selfish_neighbors,
-                    # # # )
-
                     return True
 
             # received block's height is equal to current block's height
             elif emitter.current_height == self.current_height:
 
                 ## if current block was mined by an HONEST NODE, adopt the new block (mined by a SELFISH NODE) and broadcast it to ALL NODES
-                # IMPORTANT NOTE: This ensures that a selfish node mines on top of their selfish branch in a 1-1 race.
+                # NOTE: This ensures that a selfish node mines on top of their selfish branch in a 1-1 race.
 
                 # current block was mined by an HONEST NODE
                 if self.block_tree[self.current_block]["miner_is_selfish"] == False:

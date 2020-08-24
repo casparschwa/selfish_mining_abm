@@ -1,16 +1,33 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+import datetime
+import simulations
 import os
+import time
 
 
 #####################
 #### Data import ####
 #####################
-
-data_filename = "run1.csv"
-path = os.path.join(os.getcwd(), "output/{}".format(data_filename))
+# gets the last created filename (which is the latest dataset)
+search_dir = os.path.join(os.getcwd(), "output/")
+os.chdir(search_dir)
+files = filter(os.path.isfile, os.listdir(search_dir))
+files = [os.path.join(search_dir, f) for f in files]  # add path to each file
+files.sort(key=lambda x: os.path.getmtime(x))
+path = files[::-1][0]
+print("Path: ", path)
+fname = os.path.basename(path)
+print(fname)
+print(os.getcwd())
 data = pd.read_csv(filepath_or_buffer=path)
+print(data)
+
+# path = os.path.join(os.getcwd(), "output/")
+# fname = sorted(filter(os.path.isfile, os.listdir(".")), key=os.path.getmtime)[::-1][0]
+# path = os.path.join(path, fname)
+# data = pd.read_csv(filepath_or_buffer=path)
 
 
 # # # ############################
@@ -51,9 +68,9 @@ for index, gamma in enumerate(gammas):
         data[data["Gamma"] == gamma]["Alpha"],
         data[data["Gamma"] == gamma]["RelativeSelfishRevenue"],
         label=r"$\gamma$ = {}".format(gamma),
-        marker=marker_list[index],
-        color=colour_list[index],
-        markerfacecolor="None",
+        # # # marker=marker_list[index],
+        # # # color=colour_list[index],
+        # # # markerfacecolor="None",
         linestyle="-",
     )
 
@@ -81,8 +98,8 @@ ax.set_ylabel("Relative Pool Revenue")
 ax.tick_params(direction="in")
 ax.legend()
 
-fig1_filename = "{}_fig1.png".format(data_filename)
-path = os.path.join(os.getcwd(), "output/{}".format(fig1_filename))
+fig1_filename = "fig1_{}.png".format(fname)
+path = os.path.join(os.getcwd(), "{}".format(fig1_filename))
 plt.savefig(path)
 
 #################################
@@ -121,7 +138,7 @@ ax.tick_params(direction="in")
 ax.legend()
 
 # plt.tight_layout()
-fig2_filename = "{}_fig2.png".format(data_filename)
-path = os.path.join(os.getcwd(), "output/{}".format(fig2_filename))
+fig2_filename = "fig2_{}.png".format(fname)
+path = os.path.join(os.getcwd(), "{}".format(fig2_filename))
 plt.savefig(path)
 plt.show()

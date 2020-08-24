@@ -8,9 +8,6 @@ from selfish_node import SelfishNode
 
 
 class GillespieBlockchain:
-    #%%%%
-    # one more variable should be passed to __init__(), e.g. is_selfish: add a vector with booleans. This indicated whether a node is honest or selfish.
-    #%%%%
     def __init__(
         self, net_p2p, is_selfish, hashing_power, tau_nd, tau_mine=10, verbose=False
     ):
@@ -87,7 +84,7 @@ class GillespieBlockchain:
 
         # Parameters
         # avg. time of network diffusion (network delay / latency)
-        self.tau_nd = tau_nd
+        self.tau_nd = tau_nd  # avg. internode delay (avg. time consumed for block delivery between 2 nodes)
         self.tau_mine = tau_mine  # avg. time between blocks -> bitcoin: 10'
         self.lambda_nd = 1.0 / tau_nd  # lambda: network delay (latency)
         self.lambda_mine = 1.0 / tau_mine  # lambda: mining
@@ -182,15 +179,11 @@ class GillespieBlockchain:
 
     def next_event(self):
         """
-        This function ...
+        This function determines the next even taking place, using the Gillespie algorithm. It then triggers the respective even, i.e. it calls the mine_even or gossip_event function. 
         """
 
-        #
-        # IMPORTANT NOTE: Why is only lambda_gossip summed over the number of nodes? Because gossiping is not dependent on a global average like mining is with 10 minute intervals?
-        #
-
         # computes waiting time before next event occurs
-        lambda_gossip = len(self.gossiping_nodes) * self.lambda_nd
+        lambda_gossip = len(self.gossiping_nodes) * self.lambda_nd  #
         lambda_sum = self.lambda_mine + lambda_gossip
 
         # generate waiting time for next event
@@ -205,11 +198,6 @@ class GillespieBlockchain:
 
         # jump to event time generated above.
         self.time += time_increment
-
-        #
-        # IMPORTANT NOTE: Should we not use the same np.random.random() value from time_increment above for the state update? Should we not have only one source of randomness?!
-        # What is the exact logic of lambda_mine / lambda_sum below?
-        #
 
         # update the state (either mining or gossiping event)
         rnd_event = np.random.random()
