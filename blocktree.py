@@ -282,38 +282,39 @@ class BlockTree:
         # # # # max_time_fully_propagated = np.max(fully_propagated_times)
 
         # mean/median/min/max time of propagation for honest main chain blocks (-> time if network were to behave normally)
-        # NOTE: we need to check whether any blocks are honest and on main chain, because otherwise min() function will throw an error!
+        # we need to check whether any blocks are honest and on main chain, because otherwise min() function will throw an error!
+        # NOTE: I removed min/max propagation times -> not really needed
         honest_main_propagated_times = propagation_time[is_honest_main]
-        if len(honest_main_propagated_times) > 0:
-            mean_time_honest_main_propagation = np.mean(honest_main_propagated_times)
-            median_time_honest_main_propagation = np.median(
-                honest_main_propagated_times
-            )
-            min_time_honest_main_propagation = np.nanmin(
-                [i if i > 0 else float("NaN") for i in honest_main_propagated_times]
-            )
-            max_time_honest_main_propagation = np.max(honest_main_propagated_times)
-        else:
-            mean_time_honest_main_propagation = (
-                median_time_honest_main_propagation
-            ) = (
-                min_time_honest_main_propagatation
-            ) = max_time_honest_main_propagation = float("NaN")
+        mean_time_honest_main_propagation = np.mean(honest_main_propagated_times)
+        median_time_honest_main_propagation = np.median(honest_main_propagated_times)
+
+        # # # if len(honest_main_propagated_times) > 0:
+        # # #     # min_time_honest_main_propagation = np.nanmin(
+        # # #     #     [i if i > 0 else float("NaN") for i in honest_main_propagated_times]
+        # # #     # )
+        # # #     max_time_honest_main_propagation = np.max(honest_main_propagated_times)
+        # # # else:
+        # # #     mean_time_honest_main_propagation = (
+        # # #         median_time_honest_main_propagation
+        # # #     ) = (
+        # # #         min_time_honest_main_propagation
+        # # #     ) = max_time_honest_main_propagation = float("NaN")
 
         # mean/median/min/max time of propagation for ALL blocks
-        # NOTE: we need to check whether any blocks are honest and on main chain, because otherwise min() function will throw an error!
-        if len(propagation_time) > 0:
-            mean_time_propagation = np.mean(propagation_time)
-            median_time_propagation = np.median(propagation_time)
-            min_time_propagatation = np.nanmin(
-                [i if i > 0 else float("NaN") for i in propagation_time]
-            )
-            max_time_propagation = np.max(propagation_time)
+        # we need to check whether any blocks are honest and on main chain, because otherwise min() function will throw an error!
+        # NOTE: I removed min/max propagation times -> not really needed
+        mean_time_propagation = np.mean(propagation_time)
+        median_time_propagation = np.median(propagation_time)
 
-        else:
-            mean_time_propagation = (
-                median_time_propagation
-            ) = min_time_propagatation = max_time_propagation = float("NaN")
+        # # # if len(propagation_time) > 0:
+        # # #     min_time_propagation = np.nanmin(
+        # # #         [i if i > 0 else float("NaN") for i in propagation_time]
+        # # #     )
+        # # #     max_time_propagation = np.max(propagation_time)
+        # # # else:
+        # # #     mean_time_propagation = (
+        # # #         median_time_propagation
+        # # #     ) = min_time_propagation = max_time_propagation = float("NaN")
 
         # MINING REWARDS
         selfish_revenue = 0
@@ -420,16 +421,16 @@ class BlockTree:
             msb_i,
             mean_time_honest_main_propagation,
             median_time_honest_main_propagation,
-            min_time_honest_main_propagatation,
-            max_time_honest_main_propagation,
+            # min_time_honest_main_propagation,
+            # max_time_honest_main_propagation,
             # mean_time_fully_propagated,
             # median_time_fully_propagated,
             # min_time_fully_propagated,
             # max_time_fully_propagated,
             mean_time_propagation,
             median_time_propagation,
-            min_time_propagatation,
-            max_time_propagation,
+            # min_time_propagation,
+            # max_time_propagation,
         ]
 
         return data_point

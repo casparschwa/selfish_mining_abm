@@ -81,8 +81,8 @@ if __name__ == "__main__":
     ###################################
 
     # TO SPECIFY
-    number_of_nodes = 1000
-    number_selfish_nodes = 50
+    number_of_nodes = 100
+    number_selfish_nodes = 10
     logging.info("Number selfish nodes: {}".format(number_selfish_nodes))
     number_honest_nodes = number_of_nodes - number_selfish_nodes
 
@@ -99,10 +99,10 @@ if __name__ == "__main__":
     logging.info("Number of neighbors: {}".format(number_of_neighbors))
 
     # minutes in simulation world
-    simulating_time = 10000
+    simulating_time = 100
 
     # average results over how many repititons?
-    repititions = 5
+    repititions = 2
     logging.info("Repititions: {}".format(repititions))
 
     # log files?
@@ -124,16 +124,16 @@ if __name__ == "__main__":
         "MSB",
         "MeanTimeHonestMainchainPropagation",
         "MediaTimeHonestMainchainPropagation",
-        "MinTimeHonestMainchainPropagation",
-        "MaxTimeHonestMainchainPropagation",
+        # "MinTimeHonestMainchainPropagation",
+        # "MaxTimeHonestMainchainPropagation",
         # "MeanTimeFullyPropagated",
         # "MedianTimeFullyPropagated",
         # "MinTimeFullyPropagated",
         # "MaxTimeFullyPropagated",
         "MeanTimePropagation",
         "MedianTimePropagation",
-        "MinTimePropagation",
-        "MaxTimePropagation",
+        # "MinTimePropagation",
+        # "MaxTimePropagation",
     ]
 
     # initialize data list with appropriate list of lists of 0's
