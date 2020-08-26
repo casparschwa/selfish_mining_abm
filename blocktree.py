@@ -234,6 +234,7 @@ class BlockTree:
                 for n in self.tree.nodes()
             ]
         )
+
         # array of number of reached nodes for each block
         miners = np.array(
             [self.attributes[n]["reached_nodes"] for n in self.tree.nodes()]
@@ -250,11 +251,8 @@ class BlockTree:
         # array of booleans whether block was mined by honest AND is in main chain
         is_honest = np.logical_not(is_selfish)
         # because genesis block is None, np.logical_not() flips it to True.
-        is_honest[0] = None
-        is_honest_main = np.logical_and(is_honest, is_main_chain)
-
-        reached_nodes = miners.copy()
-
+        is_honest[0] = False
+        is_honest_main = np.array(np.logical_and(is_honest, is_main_chain), dtype=bool)
         # CALCULATE ORPHAN RATE
         # total number of blocks created
         num_blocks = self.tree.number_of_nodes()
@@ -269,6 +267,7 @@ class BlockTree:
         num_blocks_honest = num_blocks - num_blocks_selfish
 
         # PROPAGATION TIMES CALUCLATIONS
+        reached_nodes = miners.copy()
         # # # # # array of booleans for whether a block has propagated fully or not
         # # # # fully_propagated_blocks = reached_nodes == lcc_size
         # # # # # array of propagation times of blocks that have fully propagated
@@ -281,10 +280,14 @@ class BlockTree:
         # # # # max_time_fully_propagated = np.max(fully_propagated_times)
 
         # mean/median/min/max time of propagation for honest main chain blocks (-> time if network were to behave normally)
-        mean_time_honest_main_propagation = np.mean(propagation_time)
-        median_time_honest_main_propagation = np.median(propagation_time)
-        min_time_honest_main_propagatation = min(i for i in propagation_time if i > 0)
-        max_time_honest_main_propagation = np.max(propagation_time)
+        honest_main_propagated_times = propagation_time[is_honest_main]
+        print(honest_main_propagated_times)
+        mean_time_honest_main_propagation = np.mean(honest_main_propagated_times)
+        median_time_honest_main_propagation = np.median(honest_main_propagated_times)
+        min_time_honest_main_propagatation = min(
+            i for i in honest_main_propagated_times if i > 0
+        )
+        max_time_honest_main_propagation = np.max(honest_main_propagated_times)
 
         # mean/median/min/max time of propagation for ALL blocks
         mean_time_propagation = np.mean(propagation_time)

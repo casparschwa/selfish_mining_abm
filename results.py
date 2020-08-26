@@ -17,30 +17,8 @@ files = filter(os.path.isfile, os.listdir(search_dir))
 files = [os.path.join(search_dir, f) for f in files]  # add path to each file
 files.sort(key=lambda x: os.path.getmtime(x))
 path = files[::-1][0]
-print("Path: ", path)
 fname = os.path.basename(path)
-print(fname)
-print(os.getcwd())
 data = pd.read_csv(filepath_or_buffer=path)
-print(data)
-
-# path = os.path.join(os.getcwd(), "output/")
-# fname = sorted(filter(os.path.isfile, os.listdir(".")), key=os.path.getmtime)[::-1][0]
-# path = os.path.join(path, fname)
-# data = pd.read_csv(filepath_or_buffer=path)
-
-
-# # # ############################
-# # # #### Theoretical Values ####
-# # # ############################
-
-
-# # # def calc_revenue(alpha, gamma):
-# # #     a, g = alpha, gamma
-# # #     relative_revenue_theory = (
-# # #         a * ((1 - a) ** 2) * (4 * a + g * (1 - 2 * a)) - a ** 3
-# # #     ) / (1 - a * (1 + (2 - a) * a))
-# # #     return relative_revenue_theory
 
 
 def calc_threshold(gamma):

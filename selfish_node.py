@@ -129,6 +129,9 @@ class SelfishNode:
         if except_miner is not None:
             self.non_gossiped_to.discard(except_miner)
 
+        # reset private branch length
+        self.private_branch_length = 0
+
     def __broadcast_to_selfish(self, except_emitter=None, except_miner=None):
         """
         Description:
@@ -230,9 +233,6 @@ class SelfishNode:
                         except_miner=self.block_tree[self.current_block]["miner"],
                     )
 
-                    # reset private branch length
-                    self.private_branch_length = 0
-
                     # update block_to_broadcast_to_honest
                     self.block_to_broadcast_to_honest = self.current_block
                     self.height_to_broadcast_to_honest = self.current_height
@@ -292,8 +292,6 @@ class SelfishNode:
                         except_emitter=emitter.id,
                         except_miner=self.block_tree[self.current_block]["miner"],
                     )
-                    # reset private branch length
-                    self.private_branch_length = 0
 
                     # update block_to_broadcast_to_honest
                     self.block_to_broadcast_to_honest = self.current_block
@@ -368,8 +366,6 @@ class SelfishNode:
                         except_emitter=emitter.id,
                         except_miner=self.block_tree[self.current_block]["miner"],
                     )
-                    # reset private branch length
-                    self.private_branch_length = 0
 
                     # update block_to_broadcast_to_honest
                     self.block_to_broadcast_to_honest = self.current_block
@@ -396,9 +392,6 @@ class SelfishNode:
 
                     # broadcast current (selfish) block to HONEST NODES (including emitter and miner!)
                     self.__broadcast_to_honest()
-
-                    # reset private branch length
-                    self.private_branch_length = 0
 
                     # update block_to_broadcast_to_honest
                     self.block_to_broadcast_to_honest = self.current_block
@@ -427,9 +420,6 @@ class SelfishNode:
 
                     # broadcast current (selfish) block to HONEST NODES (including emitter and miner!)
                     self.__broadcast_to_honest()
-
-                    # reset private branch length
-                    self.private_branch_length = 0
 
                     # update block_to_broadcast_to_honest
                     self.block_to_broadcast_to_honest = self.current_block

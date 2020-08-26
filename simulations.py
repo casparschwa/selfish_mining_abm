@@ -5,7 +5,8 @@ import pandas as pd
 import os
 import time
 import logging
-import datetime
+
+# import datetime
 from tqdm import tqdm, trange
 from blockchain import GillespieBlockchain
 
@@ -14,7 +15,8 @@ if __name__ == "__main__":
 
     ########################
     #### Set up logging ####
-    date_appendix = datetime.datetime.utcnow().strftime("%Y-%m-%d-%H:%M:%S")
+    # date_appendix = datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
+    date_appendix = "test"
     fname = "blockchain_{}.log".format(date_appendix)
     path = os.path.join(os.getcwd(), "logs/{}".format(fname))
     logging.basicConfig(
@@ -65,7 +67,7 @@ if __name__ == "__main__":
     ###################################
 
     # TO SPECIFY
-    number_of_nodes = 10
+    number_of_nodes = 100
     number_selfish_nodes = 2
     number_honest_nodes = number_of_nodes - number_selfish_nodes
 
@@ -82,10 +84,10 @@ if __name__ == "__main__":
     simulating_time = 1000
 
     # average results over how many repititons?
-    repititions = 1
+    repititions = 5
 
     # log files?
-    verbose = True
+    verbose = False
 
     # DATA COLLECTION STUFF
     columns = [
@@ -127,6 +129,13 @@ if __name__ == "__main__":
         for tau_nd in tqdm(gammas, desc="Gamma loop", leave=False):
 
             for alpha in tqdm(alphas, desc="Alpha loop", leave=False):
+
+                if verbose:
+                    logging.info(
+                        "------------------------- NEW  RUN -------------------------\nRepition: {}; Gamma: {}; Alpha: {}".format(
+                            rep, round(tau_nd, 3), round(alpha, 3)
+                        )
+                    )
 
                 if alpha == 0:
                     model_setup = set_up_model(
