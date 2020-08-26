@@ -219,6 +219,7 @@ class BlockTree:
         """
         ONLY CALL AT END OF SIMULATION AND AFTER HAVING TAGGED THE MAIN CHAIN
         """
+        np.seterr(all="raise")
 
         # tag main chain, otherwise results are not obtainable
         self.tag_main_chain()
@@ -285,8 +286,15 @@ class BlockTree:
         # we need to check whether any blocks are honest and on main chain, because otherwise min() function will throw an error!
         # NOTE: I removed min/max propagation times -> not really needed
         honest_main_propagated_times = propagation_time[is_honest_main]
-        mean_time_honest_main_propagation = np.mean(honest_main_propagated_times)
-        median_time_honest_main_propagation = np.median(honest_main_propagated_times)
+        if len(honest_main_propagated_times) > 0:
+            mean_time_honest_main_propagation = np.mean(honest_main_propagated_times)
+            median_time_honest_main_propagation = np.median(
+                honest_main_propagated_times
+            )
+        else:
+            mean_time_honest_main_propagation = (
+                median_time_honest_main_propagation
+            ) = float("NaN")
 
         # # # if len(honest_main_propagated_times) > 0:
         # # #     # min_time_honest_main_propagation = np.nanmin(
@@ -364,6 +372,8 @@ class BlockTree:
         # Compute S_i (average number of consecutive selfish blocks in shuffled main chain)
         # we need to average, because we're randomly shuffling the block order of the main chain
         repititions = 100
+        # list of consecutive selfish blocks on main chain for each repitition (shuffled)
+        # list will be filled with zeros if there are never any consecutive selfish blocks on main chain...
         S_i_list = []
         for i in range(repititions):
             # shuffle block_list and block_id_list together
@@ -375,6 +385,7 @@ class BlockTree:
             shuffled_mc_block_list = list(shuffled_mc_block_list)
             shuffled_mc_block_id_list = list(shuffled_mc_block_id_list)
 
+            # list of selfish block ids that are on main chain (shuffled)
             selfish_main_blocks = []
             for block_id in shuffled_mc_block_id_list:
                 if (
@@ -383,6 +394,7 @@ class BlockTree:
                 ):
                     selfish_main_blocks.append(block_id)
 
+            # compute number of consecutive selfish blocks on main chain (shuffled)
             S_i = 0
             for index, value in enumerate(selfish_main_blocks):
                 if index < len(selfish_main_blocks) - 1:
@@ -398,7 +410,10 @@ class BlockTree:
         if C_i == S_i_avg:
             msb_i = 0
         else:
-            msb_i = (C_i - S_i_avg) / S_i_std
+            if S_i_std == 0:
+                msb_i = 0
+            else:
+                msb_i = (C_i - S_i_avg) / S_i_std
         # # # print(
         # # #     "C_i: {}, S_i_avg: {}, S_i_std: {}, MSB_i: {}".format(
         # # #         C_i, S_i_avg, S_i_std, msb_i
