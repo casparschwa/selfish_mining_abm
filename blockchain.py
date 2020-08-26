@@ -1,7 +1,7 @@
 import networkx as nx
 import numpy as np
-import logging
-import os
+import logging, os
+
 from blocktree import BlockTree
 from honest_node import HonestNode
 from selfish_node import SelfishNode

@@ -1,12 +1,7 @@
 import networkx as nx
 import numpy as np
-import matplotlib.pyplot as plt
 import pandas as pd
-import os
-import time
-import logging
-
-# import datetime
+import os, time, logging
 from tqdm import tqdm, trange
 from blockchain import GillespieBlockchain
 
@@ -15,8 +10,20 @@ if __name__ == "__main__":
 
     ########################
     #### Set up logging ####
-    # date_appendix = datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
-    date_appendix = "test"
+    timestamp = time.localtime()
+    date_appendix = (
+        str(timestamp[0])
+        + "-"
+        + str(timestamp[1])
+        + "-"
+        + str(timestamp[2])
+        + "-"
+        + str(timestamp[3])
+        + ":"
+        + str(timestamp[4])
+        + ":"
+        + str(timestamp[5])
+    )
     fname = "blockchain_{}.log".format(date_appendix)
     path = os.path.join(os.getcwd(), "logs/{}".format(fname))
     logging.basicConfig(
@@ -39,8 +46,13 @@ if __name__ == "__main__":
 
         # some nodes may have been removed as they were not part of the lcc -> update num nodes
         number_of_nodes = len(net_p2p)
+        logging.info("number of nodes: {}".format(number_of_nodes))
         number_honest_nodes = number_of_nodes - number_selfish_nodes
+        logging.info("number of honest nodes: {}".format(number_honest_nodes))
         total_hashing_power_honest = 1 - alpha
+        logging.info(
+            "Total honest hashing power: {}".format(total_hashing_power_honest)
+        )
         if alpha == 0:
             hashing_power_selfish = np.zeros(number_selfish_nodes)
         else:
@@ -58,7 +70,9 @@ if __name__ == "__main__":
 
         # final hasing_power and is_selfish arrays
         hashing_power = hashing_power[randomize]
+        logging.info("Hashing power array: {}".format(hashing_power))
         is_selfish = is_selfish[randomize]
+        logging.info("Selfish nodes array: {}".format(is_selfish))
 
         return net_p2p, is_selfish, hashing_power
 
@@ -67,24 +81,27 @@ if __name__ == "__main__":
     ###################################
 
     # TO SPECIFY
-    number_of_nodes = 100
-    number_selfish_nodes = 2
+    number_of_nodes = 1000
+    number_selfish_nodes = 10
+    logging.info("Number selfish nodes: {}".format(number_selfish_nodes))
     number_honest_nodes = number_of_nodes - number_selfish_nodes
 
     # total hashing power selfish nodes
     alphas = np.linspace(0, 0.5, 21)
 
     # tau_nd is similar to gamma in original paper
-    gammas = np.linspace(200, 10000, 3) / 60000  # 1 minute equals 60'000 milliseconds.
+    gammas = np.linspace(200, 1000, 3) / 60000  # 1 minute equals 60'000 milliseconds.
 
     # for random gnm graph
     number_of_neighbors = 1
+    logging.info("Number of neighbors: {}".format(number_of_neighbors))
 
     # minutes in simulation world
     simulating_time = 1000
 
     # average results over how many repititons?
     repititions = 5
+    logging.info("Repititions: {}".format(repititions))
 
     # log files?
     verbose = False

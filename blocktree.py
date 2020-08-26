@@ -1,5 +1,6 @@
 import networkx as nx
 import numpy as np
+
 from block import Block
 
 
@@ -281,7 +282,6 @@ class BlockTree:
 
         # mean/median/min/max time of propagation for honest main chain blocks (-> time if network were to behave normally)
         honest_main_propagated_times = propagation_time[is_honest_main]
-        print(honest_main_propagated_times)
         mean_time_honest_main_propagation = np.mean(honest_main_propagated_times)
         median_time_honest_main_propagation = np.median(honest_main_propagated_times)
         min_time_honest_main_propagatation = min(
@@ -290,10 +290,15 @@ class BlockTree:
         max_time_honest_main_propagation = np.max(honest_main_propagated_times)
 
         # mean/median/min/max time of propagation for ALL blocks
-        mean_time_propagation = np.mean(propagation_time)
-        median_time_propagation = np.median(propagation_time)
-        min_time_propagatation = min(i for i in propagation_time if i > 0)
-        max_time_propagation = np.max(propagation_time)
+        if len(propagation_time) > 0:
+            mean_time_propagation = (
+                median_time_propagation
+            ) = min_time_propagatation = max_time_propagation = float("NaN")
+        else:
+            mean_time_propagation = float("NaN")
+            median_time_propagation = np.median(propagation_time)
+            min_time_propagatation = min(i for i in propagation_time if i > 0)
+            max_time_propagation = np.max(propagation_time)
 
         # MINING REWARDS
         selfish_revenue = 0
