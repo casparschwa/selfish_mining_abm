@@ -103,7 +103,7 @@ class GillespieBlockchain:
                     (self.nodes[n].id, self.nodes[n].non_gossiped_to)
                 )
             if len(nodes_still_gossiping) != 0:
-                logging.warning(
+                logging.info(
                     "-------------------------\nNODES STILL GOSSIPING JUST BEFORE NEW MINING EVENT: {} \n-------------------------".format(
                         nodes_still_gossiping
                     )

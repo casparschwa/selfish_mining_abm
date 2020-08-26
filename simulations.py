@@ -82,22 +82,24 @@ if __name__ == "__main__":
 
     # TO SPECIFY
     number_of_nodes = 1000
-    number_selfish_nodes = 10
+    number_selfish_nodes = 50
     logging.info("Number selfish nodes: {}".format(number_selfish_nodes))
     number_honest_nodes = number_of_nodes - number_selfish_nodes
 
     # total hashing power selfish nodes
     alphas = np.linspace(0, 0.5, 21)
+    # alphas = np.array([0.2])
 
     # tau_nd is similar to gamma in original paper
     gammas = np.linspace(200, 1000, 3) / 60000  # 1 minute equals 60'000 milliseconds.
+    # gammas = np.array([200 / 60000])
 
     # for random gnm graph
     number_of_neighbors = 1
     logging.info("Number of neighbors: {}".format(number_of_neighbors))
 
     # minutes in simulation world
-    simulating_time = 1000
+    simulating_time = 10000
 
     # average results over how many repititons?
     repititions = 5
@@ -119,6 +121,7 @@ if __name__ == "__main__":
         "SelfishRevenue",
         "HonestRevenue",
         "RelativeSelfishRevenue",
+        "MSB",
         "MeanTimeHonestMainchainPropagation",
         "MediaTimeHonestMainchainPropagation",
         "MinTimeHonestMainchainPropagation",

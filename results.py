@@ -119,3 +119,40 @@ fig2_filename = "fig2_{}.png".format(fname)
 path = os.path.join(os.getcwd(), "{}".format(fig2_filename))
 plt.savefig(path)
 plt.show()
+
+
+####################################
+###########   MSB Model   ##########
+####################################
+
+gammas = data["Gamma"].unique()
+marker_list = ["+", "x", "s", "o"]
+colour_list = ["red", "green", "blue", "orange"]
+
+fig3 = plt.figure()
+ax = fig3.add_subplot(1, 1, 1)
+ax = fig3.add_axes([0.0, 0.0, 1, 1])
+
+for index, gamma in enumerate(gammas):
+    # plotting only every 20th point -> [0::20]
+    # simulation values
+    ax.plot(
+        data[data["Gamma"] == gamma]["Alpha"],
+        data[data["Gamma"] == gamma]["MSB"],
+        label=r"$\gamma$ = {}".format(gamma),
+        # # # marker=marker_list[index],
+        # # # color=colour_list[index],
+        # # # markerfacecolor="None",
+        linestyle="-",
+    )
+
+ax.set_xlabel(r"Relative Pool Size $\alpha$")
+ax.set_ylabel("MSB")
+ax.tick_params(direction="in")
+ax.legend()
+plt.show()
+
+
+fig3_filename = "fig3_{}.png".format(fname)
+path = os.path.join(os.getcwd(), "{}".format(fig3_filename))
+plt.savefig(path)
