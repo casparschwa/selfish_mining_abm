@@ -289,8 +289,8 @@ class BlockTree:
             median_time_honest_main_propagation = np.median(
                 honest_main_propagated_times
             )
-            min_time_honest_main_propagatation = min(
-                i for i in honest_main_propagated_times if i > 0
+            min_time_honest_main_propagation = np.nanmin(
+                [i if i > 0 else float("NaN") for i in honest_main_propagated_times]
             )
             max_time_honest_main_propagation = np.max(honest_main_propagated_times)
         else:
@@ -305,7 +305,9 @@ class BlockTree:
         if len(propagation_time) > 0:
             mean_time_propagation = np.mean(propagation_time)
             median_time_propagation = np.median(propagation_time)
-            min_time_propagatation = min(i for i in propagation_time if i > 0)
+            min_time_propagatation = np.nanmin(
+                [i if i > 0 else float("NaN") for i in propagation_time]
+            )
             max_time_propagation = np.max(propagation_time)
 
         else:

@@ -9,6 +9,10 @@ import simulations
 #####################
 #### Data import ####
 #####################
+
+# IMPORTED OR DATASET GENERATED LAST?
+use_import = True
+
 # gets the last created filename (which is the latest dataset)
 search_dir = os.path.join(os.getcwd(), "output/")
 os.chdir(search_dir)
@@ -17,7 +21,14 @@ files = [os.path.join(search_dir, f) for f in files]  # add path to each file
 files.sort(key=lambda x: os.path.getmtime(x))
 path = files[::-1][0]
 fname = os.path.basename(path)
-data = pd.read_csv(filepath_or_buffer=path)
+
+imported_data_filename = "import1.csv"
+path_import = os.path.join(os.getcwd(), "{}".format(imported_data_filename))
+
+if use_import:
+    data = pd.read_csv(filepath_or_buffer=path_import)
+else:
+    data = pd.read_csv(filepath_or_buffer=path)
 
 
 def calc_threshold(gamma):
@@ -36,7 +47,7 @@ colour_list = ["red", "green", "blue", "orange"]
 
 fig1 = plt.figure()
 ax = fig1.add_subplot(1, 1, 1)
-ax = fig1.add_axes([0.0, 0.0, 1, 1])
+ax = fig1.add_axes([0.1, 0.1, 0.75, 0.75])
 
 for index, gamma in enumerate(gammas):
     # plotting only every 20th point -> [0::20]
