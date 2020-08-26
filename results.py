@@ -88,48 +88,47 @@ ax.legend()
 
 fig1_filename = "fig1_{}.png".format(fname)
 path = os.path.join(os.getcwd(), "{}".format(fig1_filename))
-plt.savefig(path)
+plt.savefig(path, bbox_inches="tight")
 
-#################################
-### Alpha Threshold Plot  #######
-#################################
+# # # #################################
+# # # ### Alpha Threshold Plot  #######
+# # # #################################
 
-unique_gammas = data["Gamma"].unique()
-alpha_thresholds_simulation = []
+# # # unique_gammas = data["Gamma"].unique()
+# # # alpha_thresholds_simulation = []
 
-for gamma in unique_gammas:
-    filt = (
-        (data["Gamma"] == gamma)
-        & (data["Alpha"] <= data["RelativeSelfishRevenue"])
-        & (data["Alpha"] != 0)
-    )
-    alpha_thresholds_simulation.append(min(list(data.loc[filt, "Alpha"])))
+# # # for gamma in unique_gammas:
+# # #     filt = (
+# # #         (data["Gamma"] == gamma)
+# # #         & (data["Alpha"] <= data["RelativeSelfishRevenue"])
+# # #         & (data["Alpha"] != 0)
+# # #     )
+# # #     alpha_thresholds_simulation.append(min(list(data.loc[filt, "Alpha"])))
 
-fig2 = plt.figure()
-ax = fig2.add_subplot()
-ax = fig2.add_axes([0, 0, 1, 1])
-ax.plot(
-    unique_gammas,
-    alpha_thresholds_simulation,
-    color="black",
-    label="Simulation",
-    marker="s",
-    markerfacecolor="None",
-    linestyle="None",
-)
-ax.plot(
-    unique_gammas, calc_threshold(unique_gammas), color="black", label="Theory",
-)
-ax.set_xlabel(r"$\gamma$")
-ax.set_ylabel(r"Threshold $\alpha$")
-ax.tick_params(direction="in")
-ax.legend()
+# # # fig2 = plt.figure()
+# # # ax = fig2.add_subplot()
+# # # ax = fig2.add_axes([0, 0, 1, 1])
+# # # ax.plot(
+# # #     unique_gammas,
+# # #     alpha_thresholds_simulation,
+# # #     color="black",
+# # #     label="Simulation",
+# # #     marker="s",
+# # #     markerfacecolor="None",
+# # #     linestyle="None",
+# # # )
+# # # ax.plot(
+# # #     unique_gammas, calc_threshold(unique_gammas), color="black", label="Theory",
+# # # )
+# # # ax.set_xlabel(r"$\gamma$")
+# # # ax.set_ylabel(r"Threshold $\alpha$")
+# # # ax.tick_params(direction="in")
+# # # ax.legend()
 
-# plt.tight_layout()
-fig2_filename = "fig2_{}.png".format(fname)
-path = os.path.join(os.getcwd(), "{}".format(fig2_filename))
-plt.savefig(path)
-plt.show()
+# # # # plt.tight_layout()
+# # # fig2_filename = "fig2_{}.png".format(fname)
+# # # path = os.path.join(os.getcwd(), "{}".format(fig2_filename))
+# # # plt.savefig(path, bbox_inches="tight")
 
 
 ####################################
@@ -166,4 +165,4 @@ plt.show()
 
 fig3_filename = "fig3_{}.png".format(fname)
 path = os.path.join(os.getcwd(), "{}".format(fig3_filename))
-plt.savefig(path)
+plt.savefig(path, bbox_inches="tight")
