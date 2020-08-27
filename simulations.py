@@ -82,7 +82,7 @@ if __name__ == "__main__":
 
     # TO SPECIFY
     number_of_nodes = 100
-    number_selfish_nodes = 10
+    number_selfish_nodes = 1
     logging.info("Number selfish nodes: {}".format(number_selfish_nodes))
     number_honest_nodes = number_of_nodes - number_selfish_nodes
 
@@ -95,14 +95,14 @@ if __name__ == "__main__":
     # gammas = np.array([200 / 60000])
 
     # for random gnm graph
-    number_of_neighbors = 1
+    number_of_neighbors = 2
     logging.info("Number of neighbors: {}".format(number_of_neighbors))
 
     # minutes in simulation world
-    simulating_time = 100
+    simulating_time = 1000
 
     # average results over how many repititons?
-    repititions = 2
+    repititions = 3
     logging.info("Repititions: {}".format(repititions))
 
     # log files?

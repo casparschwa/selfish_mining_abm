@@ -352,21 +352,23 @@ class BlockTree:
                 mc_block_list.append(self.attributes[block])
                 mc_block_id_list.append(self.attributes[block]["id"])
 
-        # create list of selfish blocks on main chain
-        selfish_main_blocks = []
+        # create list of selfish block ids on main chain
+        selfish_mc_block_id_list = []
         for block_id in mc_block_id_list:
             if (
                 self.attributes[block_id]["main_chain"]
                 and self.attributes[block_id]["miner_is_selfish"]
             ):
-                selfish_main_blocks.append(block_id)
+                selfish_mc_block_id_list.append(block_id)
 
-        # we need to make sure there are selfish blocks on the main chain, otherwise we'll get division by zero errors etc.
-        C_i = 0
         # Compute C_i (number of consecutive selfish blocks in actual main chain)
-        for index, value in enumerate(selfish_main_blocks):
-            if index < len(selfish_main_blocks) - 1:
-                if selfish_main_blocks[index] == selfish_main_blocks[index + 1] - 1:
+        C_i = 0
+        for index, value in enumerate(selfish_mc_block_id_list):
+            if index < len(selfish_mc_block_id_list) - 1:
+                if (
+                    selfish_mc_block_id_list[index]
+                    == selfish_mc_block_id_list[index + 1] - 1
+                ):
                     C_i += 1
 
         # Compute S_i (average number of consecutive selfish blocks in shuffled main chain)
@@ -386,19 +388,24 @@ class BlockTree:
             shuffled_mc_block_id_list = list(shuffled_mc_block_id_list)
 
             # list of selfish block ids that are on main chain (shuffled)
-            selfish_main_blocks = []
+            selfish_mc_block_id_list = []
             for block_id in shuffled_mc_block_id_list:
                 if (
                     self.attributes[block_id]["main_chain"]
                     and self.attributes[block_id]["miner_is_selfish"]
                 ):
-                    selfish_main_blocks.append(block_id)
+                    selfish_mc_block_id_list.append(block_id)
 
             # compute number of consecutive selfish blocks on main chain (shuffled)
             S_i = 0
-            for index, value in enumerate(selfish_main_blocks):
-                if index < len(selfish_main_blocks) - 1:
-                    if selfish_main_blocks[index] == selfish_main_blocks[index + 1] - 1:
+            for (index, value) in enumerate(selfish_mc_block_id_list):
+                if index < len(selfish_mc_block_id_list) - 1:
+                    if (
+                        selfish_mc_block_id_list[index + 1]
+                        == shuffled_mc_block_id_list[
+                            shuffled_mc_block_id_list.index(value) + 1
+                        ]
+                    ):
                         S_i += 1
             S_i_list.append(S_i)
 

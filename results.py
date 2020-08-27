@@ -11,7 +11,7 @@ import simulations
 #####################
 
 # IMPORTED OR DATASET GENERATED LAST?
-use_import = True
+use_import = False
 
 # gets the last created filename (which is the latest dataset)
 search_dir = os.path.join(os.getcwd(), "output/")
@@ -22,10 +22,11 @@ files.sort(key=lambda x: os.path.getmtime(x))
 path = files[::-1][0]
 fname = os.path.basename(path)
 
-imported_data_filename = "import1.csv"
+imported_data_filename = "import.csv"
 path_import = os.path.join(os.getcwd(), "{}".format(imported_data_filename))
 
 if use_import:
+    fname = imported_data_filename
     data = pd.read_csv(filepath_or_buffer=path_import)
 else:
     data = pd.read_csv(filepath_or_buffer=path)
@@ -47,9 +48,9 @@ colour_list = ["red", "green", "blue", "orange"]
 
 fig1 = plt.figure()
 ax = fig1.add_subplot(1, 1, 1)
-ax = fig1.add_axes([0.1, 0.1, 0.75, 0.75])
+ax = fig1.add_axes([0, 0, 1, 1])
 
-for index, gamma in enumerate(gammas):
+for (index, gamma) in enumerate(gammas):
     # plotting only every 20th point -> [0::20]
     # simulation values
     ax.plot(
@@ -86,6 +87,7 @@ ax.set_ylabel("Relative Pool Revenue")
 ax.tick_params(direction="in")
 ax.legend()
 
+# save data
 fig1_filename = "fig1_{}.png".format(fname)
 path = os.path.join(os.getcwd(), "{}".format(fig1_filename))
 plt.savefig(path, bbox_inches="tight")
@@ -143,7 +145,7 @@ fig3 = plt.figure()
 ax = fig3.add_subplot(1, 1, 1)
 ax = fig3.add_axes([0.0, 0.0, 1, 1])
 
-for index, gamma in enumerate(gammas):
+for (index, gamma) in enumerate(gammas):
     # plotting only every 20th point -> [0::20]
     # simulation values
     ax.plot(
@@ -156,13 +158,17 @@ for index, gamma in enumerate(gammas):
         linestyle="-",
     )
 
+# add significance level (MSB=2) line
+ax.plot(
+    [0, 0.5], [2, 2], label=r"$MSB = 2$", color="black", linestyle="--", linewidth=1.0,
+)
+
 ax.set_xlabel(r"Relative Pool Size $\alpha$")
 ax.set_ylabel("MSB")
 ax.tick_params(direction="in")
 ax.legend()
-plt.show()
 
-
+# save data
 fig3_filename = "fig3_{}.png".format(fname)
 path = os.path.join(os.getcwd(), "{}".format(fig3_filename))
 plt.savefig(path, bbox_inches="tight")

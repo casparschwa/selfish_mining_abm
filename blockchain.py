@@ -130,12 +130,6 @@ class GillespieBlockchain:
         # pick random recipient from set of nodes that have not been gossiped to
         recipient = np.random.choice(list(self.nodes[emitter].non_gossiped_to))
 
-        # # # assert (
-        # # #     emitter == recipient
-        # # # ), "emitter id: {}; emitter non_gossiped_to: {}".format(
-        # # #     self.nodes[emitter].id, self.nodes[emitter].non_gossiped_to
-        # # # )
-
         # removes the recipient from the non_gossiped set for the emitter
         self.nodes[emitter].gossiped_to(recipient)
 

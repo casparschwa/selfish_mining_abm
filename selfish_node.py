@@ -500,7 +500,6 @@ class SelfishNode:
             time=time,
         )
 
-        #%%%%
         # calculate delta_prev (previous to block receival -- like in the paper)
         self.delta = self.current_height - self.public_max_height
         # update current height
@@ -519,9 +518,11 @@ class SelfishNode:
         ## SCENARIO (A): any state but delta=0 and private_branch_length=2
         # elif not (self.delta == 0 and self.private_branch_length == 2):
         else:
-            # broadcast only to SELFISH NODES
-            self.__broadcast_to_selfish()
-        #%%%%
+            # NOTE: ensure selfish node has selfish neighbors, if it doesn't, then no gossiping!
+            # (if exogenous parameter selfish node is set to 1, then selfish node has no selfish neighbors...)
+            if len(self.selfish_neighbors) > 0:
+                # broadcast only to SELFISH NODES
+                self.__broadcast_to_selfish()
 
         return self.current_block
 
