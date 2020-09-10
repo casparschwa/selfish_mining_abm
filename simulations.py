@@ -1,7 +1,7 @@
 import networkx as nx
 import numpy as np
 import pandas as pd
-import os, time, logging
+import os, time, logging, pickle
 from tqdm import tqdm, trange
 from blockchain import GillespieBlockchain
 
@@ -12,16 +12,14 @@ if __name__ == "__main__":
     #### Set up logging ####
     timestamp = time.localtime()
     date_appendix = (
-        str(timestamp[0])
-        + "-"
-        + str(timestamp[1])
+        str(timestamp[1])
         + "-"
         + str(timestamp[2])
         + "-"
         + str(timestamp[3])
-        + ":"
+        + "_"
         + str(timestamp[4])
-        + ":"
+        + "_"
         + str(timestamp[5])
     )
     fname = "blockchain_{}.log".format(date_appendix)
@@ -81,29 +79,31 @@ if __name__ == "__main__":
     ###################################
 
     # TO SPECIFY
-    number_of_nodes = 100
+    number_of_nodes = 200
     number_selfish_nodes = 1
-    logging.info("Number selfish nodes: {}".format(number_selfish_nodes))
     number_honest_nodes = number_of_nodes - number_selfish_nodes
 
     # total hashing power selfish nodes
-    alphas = np.linspace(0, 0.5, 21)
+    alphas = np.linspace(0, 0.5, 11)
     # alphas = np.array([0.2])
+    logging.info("List of Alpha values to iterate over: {}".format(alphas))
 
     # tau_nd is similar to gamma in original paper
-    gammas = np.linspace(200, 1000, 3) / 60000  # 1 minute equals 60'000 milliseconds.
-    # gammas = np.array([200 / 60000])
+    # gammas = np.linspace(200, 1000, 3) / 60000  # 1 minute equals 60'000 milliseconds.
+    gammas = np.array([200 / 60000])
+    logging.info("List of Gamma values to iterate over: {}".format(gammas))
 
     # for random gnm graph
     number_of_neighbors = 2
-    logging.info("Number of neighbors: {}".format(number_of_neighbors))
+    logging.info("Number of neighbors in random graph: {}".format(number_of_neighbors))
 
     # minutes in simulation world
-    simulating_time = 1000
+    simulating_time = 10000
+    logging.info("Total simulation time: {}".format(simulating_time))
 
     # average results over how many repititons?
-    repititions = 3
-    logging.info("Repititions: {}".format(repititions))
+    repititions = 10
+    logging.info("Total number of repititions: {}".format(repititions))
 
     # log files?
     verbose = False
@@ -121,7 +121,8 @@ if __name__ == "__main__":
         "SelfishRevenue",
         "HonestRevenue",
         "RelativeSelfishRevenue",
-        "MSB",
+        "SelfishMSB",
+        "HonestMSB",
         "MeanTimeHonestMainchainPropagation",
         "MediaTimeHonestMainchainPropagation",
         # "MinTimeHonestMainchainPropagation",
@@ -150,12 +151,11 @@ if __name__ == "__main__":
 
             for alpha in tqdm(alphas, desc="Alpha loop", leave=False):
 
-                if verbose:
-                    logging.info(
-                        "------------------------- NEW  RUN -------------------------\nRepition: {}; Gamma: {}; Alpha: {}".format(
-                            rep, round(tau_nd, 3), round(alpha, 3)
-                        )
+                logging.info(
+                    "------------------------- NEW  RUN -------------------------\nRepition: {}; Gamma: {}; Alpha: {}".format(
+                        rep, round(tau_nd, 3), round(alpha, 3)
                     )
+                )
 
                 if alpha == 0:
                     model_setup = set_up_model(

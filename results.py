@@ -23,7 +23,7 @@ path = files[::-1][0]
 fname = os.path.basename(path)
 
 imported_data_filename = "import.csv"
-path_import = os.path.join(os.getcwd(), "{}".format(imported_data_filename))
+path_import = os.path.join(os.getcwd(), "{}".format(imported_data_filename[:-4]))
 
 if use_import:
     fname = imported_data_filename
@@ -150,8 +150,17 @@ for (index, gamma) in enumerate(gammas):
     # simulation values
     ax.plot(
         data[data["Gamma"] == gamma]["Alpha"],
-        data[data["Gamma"] == gamma]["MSB"],
-        label=r"$\gamma$ = {}".format(gamma),
+        data[data["Gamma"] == gamma]["SelfishMSB"],
+        label=r"$Avg. selfish miner - \gamma$ = {}".format(gamma),
+        # # # marker=marker_list[index],
+        # # # color=colour_list[index],
+        # # # markerfacecolor="None",
+        linestyle="-",
+    )
+    ax.plot(
+        data[data["Gamma"] == gamma]["Alpha"],
+        data[data["Gamma"] == gamma]["HonestMSB"],
+        label=r"$Avg. honest miner - \gamma$ = {}".format(gamma),
         # # # marker=marker_list[index],
         # # # color=colour_list[index],
         # # # markerfacecolor="None",
