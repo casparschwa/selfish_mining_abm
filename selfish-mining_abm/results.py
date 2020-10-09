@@ -1,9 +1,10 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import os, time
+import os
+import time
 
-import simulations
+# import multiprocessed_simulation
 
 
 #####################
@@ -14,7 +15,8 @@ import simulations
 use_import = False
 
 # gets the last created filename (which is the latest dataset)
-search_dir = os.path.join(os.getcwd(), "output/")
+parent_dir = os.path.dirname(os.getcwd())
+search_dir = parent_dir + "/output/data/"
 os.chdir(search_dir)
 files = filter(os.path.isfile, os.listdir(search_dir))
 files = [os.path.join(search_dir, f) for f in files]  # add path to each file
@@ -23,13 +25,15 @@ path = files[::-1][0]
 fname = os.path.basename(path)
 
 imported_data_filename = "import.csv"
-path_import = os.path.join(os.getcwd(), "{}".format(imported_data_filename[:-4]))
+path_import = os.getcwd() + f"/{imported_data_filename}"
 
 if use_import:
     fname = imported_data_filename
     data = pd.read_csv(filepath_or_buffer=path_import)
 else:
     data = pd.read_csv(filepath_or_buffer=path)
+
+    # nonsensical in abm context
 
 
 def calc_threshold(gamma):
@@ -41,7 +45,6 @@ def calc_threshold(gamma):
 ####################################
 #### Relative Pool Revenue Plot ####
 ####################################
-
 gammas = data["Gamma"].unique()
 marker_list = ["+", "x", "s", "o"]
 colour_list = ["red", "green", "blue", "orange"]
@@ -87,9 +90,9 @@ ax.set_ylabel("Relative Pool Revenue")
 ax.tick_params(direction="in")
 ax.legend()
 
-# save data
-fig1_filename = "fig1_{}.png".format(fname)
-path = os.path.join(os.getcwd(), "{}".format(fig1_filename))
+# save fig
+fig1_filename = f"fig1_{fname[:-4]}.png"
+path = os.path.dirname(os.getcwd()) + f"/figures/{fig1_filename}"
 plt.savefig(path, bbox_inches="tight")
 
 # # # #################################
@@ -127,9 +130,9 @@ plt.savefig(path, bbox_inches="tight")
 # # # ax.tick_params(direction="in")
 # # # ax.legend()
 
-# # # # plt.tight_layout()
-# # # fig2_filename = "fig2_{}.png".format(fname)
-# # # path = os.path.join(os.getcwd(), "{}".format(fig2_filename))
+# # # # save fig
+# # # fig2_filename = f"fig2_{fname[:-4]}.png"
+# # # path = os.path.dirname(os.getcwd()) + f"/figures/{fig2_filename}"
 # # # plt.savefig(path, bbox_inches="tight")
 
 
@@ -177,7 +180,7 @@ ax.set_ylabel("MSB")
 ax.tick_params(direction="in")
 ax.legend()
 
-# save data
-fig3_filename = "fig3_{}.png".format(fname)
-path = os.path.join(os.getcwd(), "{}".format(fig3_filename))
+# save fig
+fig3_filename = f"fig3_{fname[:-4]}.png"
+path = os.path.dirname(os.getcwd()) + f"/figures/{fig3_filename}"
 plt.savefig(path, bbox_inches="tight")

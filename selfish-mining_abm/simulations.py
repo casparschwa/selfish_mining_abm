@@ -1,7 +1,10 @@
 import networkx as nx
 import numpy as np
 import pandas as pd
-import os, time, logging, pickle
+import os
+import time
+import logging
+import pickle
 from tqdm import tqdm, trange
 from blockchain import GillespieBlockchain
 
@@ -22,8 +25,9 @@ if __name__ == "__main__":
         + "_"
         + str(timestamp[5])
     )
-    fname = "blockchain_{}.log".format(date_appendix)
-    path = os.path.join(os.getcwd(), "logs/{}".format(fname))
+    fname = "{}.log".format(date_appendix)
+    parent_dir = os.path.dirname(os.getcwd())
+    path = parent_dir + f"/output/logs/{fname}"
     logging.basicConfig(
         filename=path, level=logging.DEBUG, filemode="w", format="%(message)s",
     )
@@ -57,7 +61,8 @@ if __name__ == "__main__":
             hashing_power_selfish = np.random.random(number_selfish_nodes)
             hashing_power_selfish /= sum(hashing_power_selfish) / alpha
         hashing_power_honest = np.random.random(number_honest_nodes)
-        hashing_power_honest /= sum(hashing_power_honest) / total_hashing_power_honest
+        hashing_power_honest /= sum(hashing_power_honest) / \
+            total_hashing_power_honest
         hashing_power = np.append(hashing_power_selfish, hashing_power_honest)
         is_selfish = np.append(
             np.ones(number_selfish_nodes), np.zeros(number_honest_nodes)
@@ -68,9 +73,9 @@ if __name__ == "__main__":
 
         # final hasing_power and is_selfish arrays
         hashing_power = hashing_power[randomize]
-        logging.info("Hashing power array: {}".format(hashing_power))
+        # logging.info("Hashing power array: {}".format(hashing_power))
         is_selfish = is_selfish[randomize]
-        logging.info("Selfish nodes array: {}".format(is_selfish))
+        #  logging.info("Selfish nodes array: {}".format(is_selfish))
 
         return net_p2p, is_selfish, hashing_power
 
@@ -79,7 +84,7 @@ if __name__ == "__main__":
     ###################################
 
     # TO SPECIFY
-    number_of_nodes = 200
+    number_of_nodes = 100
     number_selfish_nodes = 1
     number_honest_nodes = number_of_nodes - number_selfish_nodes
 
@@ -90,19 +95,20 @@ if __name__ == "__main__":
 
     # tau_nd is similar to gamma in original paper
     # gammas = np.linspace(200, 1000, 3) / 60000  # 1 minute equals 60'000 milliseconds.
-    gammas = np.array([200 / 60000])
+    gammas = np.linspace(200, 1000, 3) / 60000
     logging.info("List of Gamma values to iterate over: {}".format(gammas))
 
     # for random gnm graph
     number_of_neighbors = 2
-    logging.info("Number of neighbors in random graph: {}".format(number_of_neighbors))
+    logging.info("Number of neighbors in random graph: {}".format(
+        number_of_neighbors))
 
     # minutes in simulation world
-    simulating_time = 10000
+    simulating_time = 100
     logging.info("Total simulation time: {}".format(simulating_time))
 
     # average results over how many repititons?
-    repititions = 10
+    repititions = 1
     logging.info("Total number of repititions: {}".format(repititions))
 
     # log files?
@@ -138,7 +144,7 @@ if __name__ == "__main__":
     ]
 
     # initialize data list with appropriate list of lists of 0's
-    ## list_of_lists = [[sim.storage()],[sim.storage()],...,[sim.storage()]] -> list of (alpha * gamma) sim.storage() lists
+    # list_of_lists = [[sim.storage()],[sim.storage()],...,[sim.storage()]] -> list of (alpha * gamma) sim.storage() lists
     data_list = [[0] * len(columns) for i in range(len(alphas) * len(gammas))]
 
     start = time.time()
@@ -204,6 +210,7 @@ if __name__ == "__main__":
 
     # save data
     data = pd.DataFrame(data_list, columns=columns)
-    filename = "data_{}.csv".format(date_appendix)
-    path = os.path.join(str(os.getcwd()), "output/{}".format(filename))
+    filename = f"data_{date_appendix}.csv"
+    path = parent_dir + f"/output/data/{filename}"
+    print(path)
     data.to_csv(path_or_buf=path)

@@ -1,15 +1,9 @@
 __pycache__
 .DS_Store
 .vscode
-output/
 venv/
 archive/
-logs/
-*.ipynb
+notebooks/
 *.csv
 *.png
 *.log
-test_results.py
-test_test.py
-playground2.py
-

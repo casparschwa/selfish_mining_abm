@@ -2,7 +2,6 @@
 ## block data ##
 ################
 
-
 class Block:
     def __init__(
         self,

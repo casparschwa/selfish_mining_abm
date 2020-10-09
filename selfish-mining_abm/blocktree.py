@@ -192,71 +192,149 @@ class BlockTree:
         """
         return self.n_blocks
 
-    def __get_msb(self, minertype):
+    def __get_honest_msb(self):
+        # create list of main chain block id's
+        mc_block_id_list = []
+        for block in self.tree.nodes():
+            if self.attributes[block]["main_chain"]:
+                mc_block_id_list.append(self.attributes[block]["id"])
+        # create list of miner id's for all blocks that are part of the main chain and were mined by honest miners
+        mc_honest_miner_id_list = []
+        for block_id in mc_block_id_list:
+            if not self.attributes[block_id]["miner_is_selfish"]:
+                mc_honest_miner_id_list.append(self.attributes[block_id]["miner"])
+
+        # get list of honest miners (unique) that have at least mined 2 blocks that are part of the main chain
+        honest_multi_miner_id_list = list(
+            set(
+                [
+                    i
+                    for i in mc_honest_miner_id_list
+                    if mc_honest_miner_id_list.count(i) > 1
+                ]
+            )
+        )
+
+        honest_MSB_list = []
+        for miner in honest_multi_miner_id_list:
+            # compute C_i value of each honest miner
+            C_i = 0
+            for index, value in enumerate(mc_honest_miner_id_list):
+                if value == miner:
+                    if index < len(mc_honest_miner_id_list) - 1:
+                        if value == mc_honest_miner_id_list[index + 1]:
+                            C_i += 1
+            # shuffle chain
+            repititions = 10
+            S_i_list = []
+            for rep in range(repititions):
+                # shuffle chain
+                shuffled_mc_honest_miner_id_ist = mc_honest_miner_id_list.copy()
+                random.shuffle(shuffled_mc_honest_miner_id_ist)
+
+                # compute average S_i value for each honest miner
+                S_i = 0
+                for index, value in enumerate(shuffled_mc_honest_miner_id_ist):
+                    if value == miner:
+                        if index < len(shuffled_mc_honest_miner_id_ist) - 1:
+                            if value == shuffled_mc_honest_miner_id_ist[index + 1]:
+                                S_i += 1
+                S_i_list.append(S_i)
+
+                logging.info("Main chain block IDs: {}".format(mc_block_id_list))
+                logging.info(
+                    "Miner IDs of honest main chain blocks: {}".format(
+                        mc_honest_miner_id_list
+                    )
+                )
+                logging.info(
+                    "Honest miners that have at least mined two main chain blocks: {}".format(
+                        honest_multi_miner_id_list
+                    )
+                )
+                logging.info(
+                    "Shuffled miner IDs of main chain blocks: {}".format(
+                        shuffled_mc_honest_miner_id_ist
+                    )
+                )
+                logging.info("S_i value: {}".format(S_i))
+                logging.info("---------------")
+
+            avg_S_i = np.mean(S_i_list)
+            std_S_i = np.std(S_i_list)
+
+            if std_S_i != 0:
+                msb_i = (C_i - avg_S_i) / std_S_i
+            else:
+                msb_i = C_i - avg_S_i
+
+            logging.info("Final S_i list: {}".format(S_i_list))
+            logging.info("Avg. S_i: {}".format(avg_S_i))
+            logging.info("Std. S_i: {}".format(std_S_i))
+            logging.info("C_i: {}".format(C_i))
+            logging.info("MSB_i: {}".format(msb_i))
+            logging.info("---------------")
+
+            honest_MSB_list.append(msb_i)
+
+        avg_honest_MSB = np.mean(honest_MSB_list) if len(honest_MSB_list) > 0 else 0
+        if len(honest_multi_miner_id_list) == 0:
+            logging.info(
+                "There are no honest miners that have mined at least 2 main chain blocks"
+            )
+            logging.info("---------------")
+        logging.info("Final honest MSB_i list: {}".format(honest_MSB_list))
+        logging.info("Average honest MSB: {}".format(avg_honest_MSB))
+        return avg_honest_MSB
+
+    def __get_selfish_msb(self):
+        """
+        returns average msb value of selfish cartel or honest miners depending on input parameter, which should be either "selfish" or "honest"
+        """
+        # create list of main chain block id's
         mc_block_id_list = []
         for block in self.tree.nodes():
             if self.attributes[block]["main_chain"]:
                 mc_block_id_list.append(self.attributes[block]["id"])
 
-        # create list of selfish/honest block ids on main chain
-        minertype_mc_block_id_list = []
+        # create list of selfish/honest block ids on main chain (depending on minertype passed as paramter to function)
+        mc_selfish_block_id_list = []
         for block_id in mc_block_id_list:
-
-            if minertype == "selfish":
-                if (
-                    self.attributes[block_id]["main_chain"]
-                    and self.attributes[block_id]["miner_is_selfish"]
-                ):
-                    minertype_mc_block_id_list.append(block_id)
-            else:
-                if (
-                    self.attributes[block_id]["main_chain"]
-                    and not self.attributes[block_id]["miner_is_selfish"]
-                ):
-                    minertype_mc_block_id_list.append(block_id)
+            if self.attributes[block_id]["miner_is_selfish"]:
+                mc_selfish_block_id_list.append(block_id)
 
         # Compute C_i (number of consecutive selfish blocks in actual main chain)
         C_i = 0
-        for index, value in enumerate(minertype_mc_block_id_list):
-            if index < len(minertype_mc_block_id_list) - 1:
+        for index, value in enumerate(mc_selfish_block_id_list):
+            if index < len(mc_selfish_block_id_list) - 1:
                 if (
-                    minertype_mc_block_id_list[index]
-                    == minertype_mc_block_id_list[index + 1] - 1
+                    mc_selfish_block_id_list[index]
+                    == mc_selfish_block_id_list[index + 1] - 1
                 ):
                     C_i += 1
 
         # Compute S_i (average number of consecutive selfish blocks in shuffled main chain)
         # we need to average, because we're randomly shuffling the block order of the main chain
-        repititions = 100
-
+        repititions = 10
         # list of consecutive selfish blocks on main chain for each shuffled repitition
         S_i_list = []
         for i in range(repititions):
+            # shuffle main chain
             shuffled_mc_block_id_list = mc_block_id_list.copy()
             random.shuffle(shuffled_mc_block_id_list)
 
             # list of selfish block ids that are on main chain (shuffled)
-            minertype_mc_block_id_list = []
+            shuffled_mc_selfish_block_id_list = []
             for block_id in shuffled_mc_block_id_list:
-                if minertype == "selfish":
-                    if (
-                        self.attributes[block_id]["main_chain"]
-                        and self.attributes[block_id]["miner_is_selfish"]
-                    ):
-                        minertype_mc_block_id_list.append(block_id)
-                else:
-                    if (
-                        self.attributes[block_id]["main_chain"]
-                        and not self.attributes[block_id]["miner_is_selfish"]
-                    ):
-                        minertype_mc_block_id_list.append(block_id)
+                if self.attributes[block_id]["miner_is_selfish"]:
+                    shuffled_mc_selfish_block_id_list.append(block_id)
 
             # compute number of consecutive selfish blocks on main chain (shuffled)
             S_i = 0
-            for (index, value) in enumerate(minertype_mc_block_id_list):
-                if index < len(minertype_mc_block_id_list) - 1:
+            for (index, value) in enumerate(shuffled_mc_selfish_block_id_list):
+                if index < len(shuffled_mc_selfish_block_id_list) - 1:
                     if (
-                        minertype_mc_block_id_list[index + 1]
+                        shuffled_mc_selfish_block_id_list[index + 1]
                         == shuffled_mc_block_id_list[
                             shuffled_mc_block_id_list.index(value) + 1
                         ]
@@ -265,48 +343,36 @@ class BlockTree:
             S_i_list.append(S_i)
 
             logging.info("Main chain block IDs: {}".format(mc_block_id_list))
-
             logging.info(
-                "Selfish main chain block IDs: {}".format(minertype_mc_block_id_list)
-            ) if minertype == "selfish" else logging.info(
-                "Honest main chain block IDs: {}".format(minertype_mc_block_id_list)
+                "Selfish main chain block IDs: {}".format(mc_selfish_block_id_list)
             )
             logging.info(
                 "Shuffled main chain block IDs: {}".format(shuffled_mc_block_id_list)
             )
-            if minertype == "selfish":
-                logging.info(
-                    "Shuffled selfish main chain block IDs: {}".format(
-                        minertype_mc_block_id_list
-                    )
+            logging.info(
+                "Shuffled selfish main chain block IDs: {}".format(
+                    shuffled_mc_selfish_block_id_list
                 )
-            else:
-                logging.info(
-                    "Shuffled honest main chain block IDs: {}".format(
-                        minertype_mc_block_id_list
-                    )
-                )
+            )
             logging.info("S_i value: {}".format(S_i))
             logging.info("---------------")
         logging.info("Final S_i list: {}".format(S_i_list))
 
-        S_i_avg = np.mean(S_i_list)
-        S_i_std = np.std(S_i_list)
+        avg_S_i = np.mean(S_i_list)
+        std_S_i = np.std(S_i_list)
         # Finally, compute MSB_i
-        if C_i == S_i_avg:
-            msb_i = 0
+        if std_S_i != 0:
+            selfish_MSB = (C_i - avg_S_i) / std_S_i
         else:
-            if S_i_std == 0:
-                msb_i = 0
-            else:
-                msb_i = (C_i - S_i_avg) / S_i_std
+            selfish_MSB = C_i - avg_S_i
 
-        logging.info("avg. S_i: {}".format(S_i_avg))
-        logging.info("S_i std.: {}".format(S_i_std))
+        logging.info("avg. S_i: {}".format(avg_S_i))
+        logging.info("S_i std.: {}".format(std_S_i))
         logging.info("C_i: {}".format(C_i))
-        logging.info("MSB_i: {}".format(msb_i))
+        logging.info("MSB_i: {}".format(selfish_MSB))
+        logging.info("---------------")
 
-        return msb_i
+        return selfish_MSB
 
     def results(self):
         """
@@ -434,17 +500,21 @@ class BlockTree:
                 honest_revenue += 1
 
         relative_selfish_revenue = selfish_revenue / (selfish_revenue + honest_revenue)
-
+        logging.info(
+            "Number of selfish blocks on main chain: {}".format(selfish_revenue)
+        )
+        logging.info("Number of honest blocks on main chain: {}".format(honest_revenue))
+        logging.info("Relative selfish revenue: {}".format(relative_selfish_revenue))
         ######################################
         # MINER SEQUENCE BOOTSTRAPPING MODEL #
         logging.info(
             "---------------------------\n CALCULATING SELFISH MSB\n---------------------------"
         )
-        msb_selfish = self.__get_msb("selfish")
+        msb_selfish = self.__get_selfish_msb()
         logging.info(
             "---------------------------\nCALCULATING HONEST MSB\n---------------------------"
         )
-        msb_honest = self.__get_msb("honest")
+        msb_honest = self.__get_honest_msb()
         ######################################
 
         data_point = [
