@@ -4,9 +4,6 @@ import matplotlib.pyplot as plt
 import os
 import time
 
-# import multiprocessed_simulation
-
-
 #####################
 #### Data import ####
 #####################
@@ -32,14 +29,6 @@ if use_import:
     data = pd.read_csv(filepath_or_buffer=path_import)
 else:
     data = pd.read_csv(filepath_or_buffer=path)
-
-    # nonsensical in abm context
-
-
-def calc_threshold(gamma):
-    g = gamma
-    alpha_threshold_theory = (1 - g) / (3 - 2 * g)
-    return alpha_threshold_theory
 
 
 ####################################
@@ -98,6 +87,15 @@ plt.savefig(path, bbox_inches="tight")
 # # # #################################
 # # # ### Alpha Threshold Plot  #######
 # # # #################################
+
+
+############################
+# nonsensical in abm context
+def calc_threshold(gamma):
+    g = gamma
+    alpha_threshold_theory = (1 - g) / (3 - 2 * g)
+    return alpha_threshold_theory
+############################
 
 # # # unique_gammas = data["Gamma"].unique()
 # # # alpha_thresholds_simulation = []

@@ -212,5 +212,4 @@ if __name__ == "__main__":
     data = pd.DataFrame(data_list, columns=columns)
     filename = f"data_{date_appendix}.csv"
     path = parent_dir + f"/output/data/{filename}"
-    print(path)
     data.to_csv(path_or_buf=path)

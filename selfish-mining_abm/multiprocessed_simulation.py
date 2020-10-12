@@ -19,15 +19,15 @@ if __name__ == "__main__":
     # parameters to loop over
     alphas = np.linspace(0, 0.5, 11)
     # 1 minute equals 60'000 milliseconds.
-    gammas = np.linspace(100, 1000, 10) / 60000
+    gammas = np.linspace(100, 1000, 1) / 60000
     repititions = 10
     # parameter list as input for multiprocessing
     parameter_list = list(itertools.product(
         list(range(repititions)), gammas, alphas))
 
     # additional parameters
-    simulation_time = 100
-    number_of_nodes = 100
+    simulation_time = 1000
+    number_of_nodes = 1000
     number_selfish_nodes = 1
     number_honest_nodes = number_of_nodes - number_selfish_nodes
     number_of_neighbors = 2  # input required for random graph
@@ -49,13 +49,13 @@ if __name__ == "__main__":
         + "_"
         + str(timestamp[5])
     )
-    fname = "{}.log".format(date_appendix)
+    fname = f"{date_appendix}.log"
     parent_dir = os.path.dirname(os.getcwd())
     path = parent_dir + f"/output/logs/{fname}"
     logging.basicConfig(
         filename=path, level=logging.DEBUG, filemode="w", format="%(message)s",
     )
-
+    # log some basic information
     logging.info(f"List of Alpha values to iterate over: {alphas}")
     logging.info(f"List of Gamma values to iterate over: {gammas}")
     logging.info(f"Number of neighbors in random graph: {number_of_neighbors}")
@@ -136,12 +136,6 @@ if __name__ == "__main__":
         for i in range(len(exogenous_data)):
             data_point.insert(i, exogenous_data[i])
 
-        # # add data point to aggregate data list
-        # for i in range(len(columns)):
-        #     data_list[repitition][i] += data_point[i]
-
-        # "ticker" functionality needs to be circumvented
-
         return data_point
 
     ##############################################################################
@@ -195,48 +189,26 @@ if __name__ == "__main__":
         # "MaxTimePropagation",
     ]
 
-    # initialize data list with appropriate list of lists of 0's
-    # list_of_lists = [[sim.storage()],[sim.storage()],...,[sim.storage()]] -> list of (alpha * gamma) sim.storage() lists
-
-    data_list = [[0] * len(columns) for i in range(len(alphas) * len(gammas))]
-    # print(len(columns))
-    # print(len(data_list[0]))
-    # print(data_list)
-    # print(len(data_list))
-
-    # dump results into list
+    # dump results into list -> res is list of lists with the data_points
     res = []
     for result in results:
         res.append(result)
 
-    # create a list of lists of lists, where the inner list of lists are lists of the runs with the identical parameters alpha and gamma
+    # create a list of lists of lists, where the inner list of lists are lists of the results with the identical parameters alpha and gamma
     res = [res[i:: (len(res) // repititions)]
            for i in range(len(res) // repititions)]
 
+    # data_list averages the result of res's inner list of lists (i.e. results of identical parameter setup)
     data_list = []
     for i in res:
-        result = []
-        for j in zip(*i):
-            result.append(sum(j))
+        result = [sum(j) for j in (zip(*i))]
         # average data
         data_list.append([i / repititions for i in result])
 
     # create dataframe
     data = pd.DataFrame(data_list, columns=columns)
 
-    # save data
-    timestamp = time.localtime()
-    date_appendix = (
-        str(timestamp[1])
-        + "-"
-        + str(timestamp[2])
-        + "-"
-        + str(timestamp[3])
-        + "_"
-        + str(timestamp[4])
-        + "_"
-        + str(timestamp[5])
-    )
+    # save data using date appendix from logging setup
     filename = f"data_{date_appendix}.csv"
-    path = parent_dir + f"/output/{filename}"
+    path = parent_dir + f"/output/data/{filename}"
     data.to_csv(path_or_buf=path)
