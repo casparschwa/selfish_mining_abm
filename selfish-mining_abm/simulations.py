@@ -84,18 +84,18 @@ if __name__ == "__main__":
     ###################################
 
     # TO SPECIFY
-    number_of_nodes = 100
+    number_of_nodes = 1000
     number_selfish_nodes = 1
     number_honest_nodes = number_of_nodes - number_selfish_nodes
 
     # total hashing power selfish nodes
-    alphas = np.linspace(0, 0.5, 11)
+    alphas = np.linspace(0, 0.5, 21)
     # alphas = np.array([0.2])
     logging.info("List of Alpha values to iterate over: {}".format(alphas))
 
     # tau_nd is similar to gamma in original paper
     # gammas = np.linspace(200, 1000, 3) / 60000  # 1 minute equals 60'000 milliseconds.
-    gammas = np.linspace(200, 1000, 3) / 60000
+    gammas = np.linspace(100, 500, 3) / 60000
     logging.info("List of Gamma values to iterate over: {}".format(gammas))
 
     # for random gnm graph
@@ -104,11 +104,11 @@ if __name__ == "__main__":
         number_of_neighbors))
 
     # minutes in simulation world
-    simulating_time = 100
+    simulating_time = 3000
     logging.info("Total simulation time: {}".format(simulating_time))
 
     # average results over how many repititons?
-    repititions = 1
+    repititions = 50
     logging.info("Total number of repititions: {}".format(repititions))
 
     # log files?
