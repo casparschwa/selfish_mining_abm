@@ -21,26 +21,26 @@ if __name__ == "__main__":
     alphas = np.linspace(0, 0.5, 11)
     # 1 minute equals 60'000 milliseconds.
     gammas = np.linspace(100, 500, 1) / 60000
-    repititions = 2
+    repititions = 20
     # parameter list as input for multiprocessing
     parameter_list = list(itertools.product(
         list(range(repititions)), gammas, alphas))
 
     # SPECFIY TOPOLOGY
     # "UNIFORM", "ER" (Erdos-Renyi) or "BA" (Barabasi-Albert)
-    topology = "BA"
+    topology = "ER"
     desired_avg_degree = 10  # applies to ER and RAND topology.
     ba_m = 5  # relevant for BA topology; no. edges to attach from new node to existing nodes
 
     # SPECIFY HASHING POWER DISTRIBUTION
     # "UNIFORM", "POWERLAW", "EXPONENTIAL"
-    hash_distribution = "EXPONENTIAl"
+    hash_distribution = "POWERLAW"
     pl_alpha = 1.88  # input parameter for powerlaw distribution
     exp_lambda = 1  # input parameter for exponential distribution
 
     # ADDITIONAL PARAMETERS
-    simulation_time = 100
-    number_of_nodes = 100
+    simulation_time = 1000
+    number_of_nodes = 1000
     number_selfish_nodes = 1  # if there is more than 1 selfish miner, they act as "cartel"
     number_honest_nodes = number_of_nodes - number_selfish_nodes
     verbose = False
@@ -113,7 +113,8 @@ if __name__ == "__main__":
 
     def __set_up_hash_distr(number_selfish_nodes, number_honest_nodes, alpha):
         # make sure that when there are no selfish nodes that alpha is never unequal 0. (in case you want to simulate only honest nodes)
-        assert not (number_selfish_nodes == 0 and alpha != 0)
+        assert not (number_selfish_nodes == 0 and alpha !=
+                    0), "Alpha unequal 0 with no selfish nodes"
 
         if hash_distribution == "UNIFORM":
             hashing_power_selfish = np.random.random(number_selfish_nodes)
