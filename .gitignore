@@ -4,6 +4,7 @@ __pycache__
 venv/
 archive/
 notebooks/
+*.ipynb
 *.csv
 *.png
 *.log

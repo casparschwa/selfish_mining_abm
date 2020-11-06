@@ -18,29 +18,32 @@ if __name__ == "__main__":
     ##############################################################################
 
     # PARAMETERS TO LOOP OVER
-    alphas = np.linspace(0, 0.5, 11)
+    alphas = np.linspace(0, 0.5, 3)
     # 1 minute equals 60'000 milliseconds.
     gammas = np.linspace(100, 500, 1) / 60000
-    repititions = 20
+    repetitions = 2
+    topologies = ["UNIFORM", "ER"]
+    hash_distributions = ["POWERLAW", "EXPONENTIAL"]
+
     # parameter list as input for multiprocessing
     parameter_list = list(itertools.product(
-        list(range(repititions)), gammas, alphas))
+        list(range(repetitions)), topologies, hash_distributions, gammas, alphas))
 
     # SPECFIY TOPOLOGY
     # "UNIFORM", "ER" (Erdos-Renyi) or "BA" (Barabasi-Albert)
-    topology = "ER"
+    # topology = "ER"
     desired_avg_degree = 10  # applies to ER and RAND topology.
     ba_m = 5  # relevant for BA topology; no. edges to attach from new node to existing nodes
 
     # SPECIFY HASHING POWER DISTRIBUTION
     # "UNIFORM", "POWERLAW", "EXPONENTIAL"
-    hash_distribution = "POWERLAW"
+    # hash_distribution = "POWERLAW"
     pl_alpha = 1.88  # input parameter for powerlaw distribution
     exp_lambda = 1  # input parameter for exponential distribution
 
     # ADDITIONAL PARAMETERS
-    simulation_time = 1000
-    number_of_nodes = 1000
+    simulation_time = 100
+    number_of_nodes = 100
     number_selfish_nodes = 1  # if there is more than 1 selfish miner, they act as "cartel"
     number_honest_nodes = number_of_nodes - number_selfish_nodes
     verbose = False
@@ -73,7 +76,7 @@ if __name__ == "__main__":
     logging.info(
         f"Desired average degree for ER and RAND graph: {desired_avg_degree}")
     logging.info(f"Total simulation time: {simulation_time}")
-    logging.info(f"Total number of repititions: {repititions}")
+    logging.info(f"Total number of repetitions: {repetitions}")
 
     ##############################################################################
     #### DEFINE FUNCTIONS TO SET UP & RUN (SINGLE) MODEL #########################
@@ -82,8 +85,8 @@ if __name__ == "__main__":
     def __set_up_topology(topology, number_of_nodes, desired_avg_degree, ba_m):
         # generate network depending on topology parameter
         if topology == "UNIFORM":
-            net_p2p = nx.gnm_random_graph(
-                number_of_nodes, number_of_nodes * desired_avg_degree / 2)
+            net_p2p = nx.random_degree_sequence_graph(
+                [desired_avg_degree for i in range(number_of_nodes)])
 
         elif topology == "ER":
             p = desired_avg_degree / number_of_nodes
@@ -111,7 +114,7 @@ if __name__ == "__main__":
 
         return net_p2p, number_honest_nodes
 
-    def __set_up_hash_distr(number_selfish_nodes, number_honest_nodes, alpha):
+    def __set_up_hash_distr(hash_distribution, number_selfish_nodes, number_honest_nodes, alpha):
         # make sure that when there are no selfish nodes that alpha is never unequal 0. (in case you want to simulate only honest nodes)
         assert not (number_selfish_nodes == 0 and alpha !=
                     0), "Alpha unequal 0 with no selfish nodes"
@@ -156,32 +159,33 @@ if __name__ == "__main__":
         return hashing_power, is_selfish
 
     def __set_up_model(
-        topology, number_of_nodes, number_selfish_nodes, alpha, desired_avg_degree, ba_m
+        topology, hash_distribution, number_of_nodes, number_selfish_nodes, alpha, desired_avg_degree, ba_m
     ):
         net_p2p, number_honest_nodes = __set_up_topology(
             topology, number_of_nodes, desired_avg_degree, ba_m)
 
         hashing_power, is_selfish = __set_up_hash_distr(
-            number_selfish_nodes, number_honest_nodes, alpha)
+            hash_distribution, number_selfish_nodes, number_honest_nodes, alpha)
 
         return net_p2p, hashing_power, is_selfish
 
     # function that handles a single run for a given set of parameters
     def run_simulation(parameters):
 
-        repitition, gamma, alpha = parameters[0], parameters[1], parameters[2]
+        # unpack parameters list
+        repetition, topology, hash_distribution, gamma, alpha = parameters
 
         if alpha == 0:
-            model_setup = __set_up_model(
-                topology, number_of_nodes, number_selfish_nodes, 0, desired_avg_degree, ba_m
+            net_p2p, hashing_power, is_selfish = __set_up_model(
+                topology, hash_distribution, number_of_nodes, number_selfish_nodes, 0, desired_avg_degree, ba_m
             )
         else:
-            model_setup = __set_up_model(
-                topology, number_of_nodes, number_selfish_nodes, alpha, desired_avg_degree, ba_m
+            net_p2p, hashing_power, is_selfish = __set_up_model(
+                topology, hash_distribution, number_of_nodes, number_selfish_nodes, alpha, desired_avg_degree, ba_m
             )
 
         model = GillespieBlockchain(
-            model_setup[0], model_setup[1], model_setup[2], gamma, verbose=verbose
+            net_p2p, is_selfish, hashing_power, gamma, verbose=verbose
         )
 
         while model.time < simulation_time:
@@ -189,7 +193,8 @@ if __name__ == "__main__":
 
         # get results
         data_point = model.block_tree.results()
-        exogenous_data = [simulation_time, alpha, gamma]
+        exogenous_data = [simulation_time, topology,
+                          hash_distribution, alpha, gamma]
         # add exogenous data to data_point
         for i in range(len(exogenous_data)):
             data_point.insert(i, exogenous_data[i])
@@ -221,6 +226,8 @@ if __name__ == "__main__":
     # columns in data set
     columns = [
         "SimulationTime",
+        "Topology",
+        "HashingPowerDistribution",
         "Alpha",
         "Gamma",
         "TotalBlocks",
@@ -234,7 +241,7 @@ if __name__ == "__main__":
         "SelfishMSB",
         "HonestMSB",
         "MeanTimeHonestMainchainPropagation",
-        "MediaTimeHonestMainchainPropagation",
+        "MedianTimeHonestMainchainPropagation",
         # "MinTimeHonestMainchainPropagation",
         # "MaxTimeHonestMainchainPropagation",
         # "MeanTimeFullyPropagated",
@@ -247,21 +254,24 @@ if __name__ == "__main__":
         # "MaxTimePropagation",
     ]
 
-    # dump results into list -> res is list of lists with the data_points
-    res = []
-    for result in results:
-        res.append(result)
-
-    # create a list of lists of lists, where the inner list of lists are lists of the results with the identical parameters alpha and gamma
-    res = [res[i:: (len(res) // repititions)]
-           for i in range(len(res) // repititions)]
+    # create a list of lists of lists, where the inner list of lists are lists of the results with the
+    # identical parameters alpha and gamma
+    res = [results[i:: (len(results) // repetitions)]
+           for i in range(len(results) // repetitions)]
 
     # data_list averages the result of res's inner list of lists (i.e. results of identical parameter setup)
     data_list = []
     for i in res:
-        result = [sum(j) for j in (zip(*i))]
-        # average data
-        data_list.append([i / repititions for i in result])
+        ''' Explanation of list concatenation below
+        zip(*i) gets values element-wise so that we can just sum and average them by dividing them by 
+        number of repetitions. However, we also have strings describing the topology and hash distribution,
+        so we need to make sure we only do calculations when it's not a string. This is handled by 
+        "if no isinstance...". If it's a string, we just take the first string of the tuple (they are all 
+        the same)
+        '''
+        result = [sum(j) / repetitions if not isinstance(j[0], str)
+                  else j[0] for j in (zip(*i))]
+        data_list.append(result)
 
     # create dataframe
     data = pd.DataFrame(data_list, columns=columns)

@@ -17,7 +17,7 @@ class SelfishNode:
         self.neighbors = set()
         self.non_gossiped_to = set()
 
-        ## variables required for SELFISH MINING LOGIC
+        # variables required for SELFISH MINING LOGIC
 
         # set of selfish nodes (neighbors)
         self.selfish_neighbors = set()
@@ -90,7 +90,7 @@ class SelfishNode:
         """
         ...
         """
-        ## broadcast old selfish block that matches new max_public_height of honest block (that I just received)
+        # broadcast old selfish block that matches new max_public_height of honest block (that I just received)
         # to ensure that the old block we want to broadcast is actually a parent of the selfish node's current block nx.predecessors() fct. is used (similar to tag_main_chain() in blocktree.py)
         # find parent block that matches current public max. height and update block_to_broadcast_to_honest accordingly (analogously for height...)
 
@@ -112,7 +112,7 @@ class SelfishNode:
         Description:
         -----------
         This private function updates the set of nodes that need to be broadcasted to, namely ALL NODES. 
-        
+
         Parameters:
         -----------
         except_emitter: int
@@ -137,7 +137,7 @@ class SelfishNode:
         Description:
         -----------
         This private function updates the set of nodes that need to be broadcasted to, namely only SELFISH NODES. 
-        
+
         Parameters:
         -----------
         except_emitter: int (default=None)
@@ -187,7 +187,8 @@ class SelfishNode:
                 self.__adopt_received_information(emitter)
                 # start informing your peers
                 self.informing = True
-                self.__broadcast_to_honest_inform_selfish(except_emitter=emitter.id)
+                self.__broadcast_to_honest_inform_selfish(
+                    except_emitter=emitter.id)
                 if self.verbose:
                     logging.info(
                         "node {} received information from node {}".format(
@@ -205,7 +206,7 @@ class SelfishNode:
                     )
                 return
 
-        ## check wether received block was mined by a selfish or honest node
+        # check wether received block was mined by a selfish or honest node
 
         # The received block was mined by a SELFISH NODE
         if self.block_tree[emitter.current_block]["miner_is_selfish"]:
@@ -213,7 +214,7 @@ class SelfishNode:
             # calculate delta_prev (previous to block receival -- like in the paper)
             self.delta = self.current_height - self.public_max_height
 
-            ## check whether received block's height is greater than my current block's height
+            # check whether received block's height is greater than my current block's height
             # if received block's height is greater than current block's height, then either SCENARIO (A) or SCENARIO (B)
             if emitter.current_height > self.current_height:
 
@@ -221,7 +222,7 @@ class SelfishNode:
                 self.private_branch_length += 1
 
                 ########################################################################################################################################
-                ## SCENARIO (B) ## - it was a 1-1 race, selfish nodes find a block -> broadcast to all
+                # SCENARIO (B) ## - it was a 1-1 race, selfish nodes find a block -> broadcast to all
                 ########################################################################################################################################
 
                 if self.delta == 0 and self.private_branch_length == 2:
@@ -250,7 +251,7 @@ class SelfishNode:
                     return True
 
                 ########################################################################################################################################
-                ## SCENARIO (A) ## - any state but delta=0 and private_branch_length=2
+                # SCENARIO (A) ## - any state but delta=0 and private_branch_length=2
                 ########################################################################################################################################
 
                 # elif not (self.delta == 0 and self.private_branch_length == 2):
@@ -280,7 +281,7 @@ class SelfishNode:
             # received block's height is equal to current block's height
             elif emitter.current_height == self.current_height:
 
-                ## if current block was mined by an HONEST NODE, adopt the new block (mined by a SELFISH NODE) and broadcast it to ALL NODES
+                # if current block was mined by an HONEST NODE, adopt the new block (mined by a SELFISH NODE) and broadcast it to ALL NODES
                 # NOTE: This ensures that a selfish node mines on top of their selfish branch in a 1-1 race.
 
                 # current block was mined by an HONEST NODE
@@ -348,7 +349,7 @@ class SelfishNode:
             # calculate delta_prev
             self.delta = self.current_height - self.public_max_height
 
-            ## check whether received block's height is greater than current public_max_height
+            # check whether received block's height is greater than current public_max_height
             # received block's height is greater than current public_max_height
             if emitter.current_height > self.public_max_height:
 
@@ -356,7 +357,7 @@ class SelfishNode:
                 self.public_max_height = emitter.current_height
 
                 ########################################################################################################################################
-                ## scenario (C),(D) and (E) ## - honest nodes are leading, adopt their branch and mine on new head
+                # scenario (C),(D) and (E) ## - honest nodes are leading, adopt their branch and mine on new head
                 ########################################################################################################################################
                 if emitter.current_height > self.current_height:
                     # adopt received block
@@ -384,7 +385,7 @@ class SelfishNode:
 
                     return True
                 ########################################################################################################################################
-                ## SCENARIO (F) ## - lead was 1, now it's 1-1, publish branch, try our luck:
+                # SCENARIO (F) ## - lead was 1, now it's 1-1, publish branch, try our luck:
                 ########################################################################################################################################
                 elif self.delta == 1:
                     # reject received block
@@ -412,7 +413,7 @@ class SelfishNode:
 
                     return False
                 ########################################################################################################################################
-                ## SCENARIO (G) ## - lead was 2, now honest are catching up, publish entire branch:
+                # SCENARIO (G) ## - lead was 2, now honest are catching up, publish entire branch:
                 ########################################################################################################################################
                 elif self.delta == 2:
                     # reject received block
@@ -441,7 +442,7 @@ class SelfishNode:
                     return False
 
                 ########################################################################################################################################
-                ## SCENARIO (H) ## - lead was more than 2, now honest found one block, publish old block that matches public max height:
+                # SCENARIO (H) ## - lead was more than 2, now honest found one block, publish old block that matches public max height:
                 ########################################################################################################################################
                 # else:
                 elif self.delta > 2:
@@ -453,7 +454,8 @@ class SelfishNode:
 
                     # start informing & broadcast old selfish parent block to HONEST NODES & inform SELFISH NODES
                     self.informing = True
-                    self.__broadcast_to_honest_inform_selfish(except_emitter=emitter.id)
+                    self.__broadcast_to_honest_inform_selfish(
+                        except_emitter=emitter.id)
 
                     if self.verbose:
                         logging.info(
@@ -507,7 +509,7 @@ class SelfishNode:
         # increase private branch length
         self.private_branch_length += 1
 
-        ## SCENARIO (B): it was a 1-1 race, selfish nodes find a block -> broadcast to all
+        # SCENARIO (B): it was a 1-1 race, selfish nodes find a block -> broadcast to all
         if self.delta == 0 and self.private_branch_length == 2:
             # stop informing
             # broadcast to ALL NODES (neighbors)
@@ -515,7 +517,7 @@ class SelfishNode:
             # reset private branch length
             self.private_branch_length = 0
 
-        ## SCENARIO (A): any state but delta=0 and private_branch_length=2
+        # SCENARIO (A): any state but delta=0 and private_branch_length=2
         # elif not (self.delta == 0 and self.private_branch_length == 2):
         else:
             # NOTE: ensure selfish node has selfish neighbors, if it doesn't, then no gossiping!
