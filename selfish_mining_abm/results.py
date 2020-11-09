@@ -3,6 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import os
 import time
+from config import *
 
 #####################
 #### Data import ####
@@ -34,67 +35,60 @@ else:
 ####################################
 #### Relative Pool Revenue Plot ####
 ####################################
-gammas = data["Gamma"].unique()
+fig, axs = plt.subplots(nrows=3, ncols=1, figsize=(
+    14, 12), sharex=True, sharey=True)
 marker_list = ["+", "x", "s", "o"]
-colour_list = ["red", "green", "blue", "orange"]
+color_list = ["red", "green", "blue", "orange"]
+topology_names = ["Uniform random", "Erdos-Renyi", "Barabasi-Albert"]
+hash_distr_names = ["Uniform random", "Powerlaw", "Exponential"]
 
-fig1 = plt.figure()
-ax = fig1.add_subplot(1, 1, 1)
-ax = fig1.add_axes([0, 0, 1, 1])
+for (ii, topology) in enumerate(topologies):
+    for (jj, hash_distr) in enumerate(hash_distributions):
+        filt = data[
+            (data["Topology"] == topology) &
+            (data["HashingPowerDistribution"] == hash_distr) &
+            (data["Gamma"] == gammas[0])
+        ]
+        axs[ii].plot(
+            filt["Alpha"],
+            filt["RelativeSelfishRevenue"],
+            label=f"Hashing Power Distribution: {hash_distr_names[jj]}",
+            marker=marker_list[jj],
+            color=color_list[jj],
+            linestyle="-")
+        axs[ii].set_xlabel(r"Relative Pool Size $\alpha$")
+        axs[ii].set_ylabel("Relative Pool Revenue")
 
-for (index, gamma) in enumerate(gammas):
-    # plotting only every 20th point -> [0::20]
-    # simulation values
-    ax.plot(
-        data[data["Gamma"] == gamma]["Alpha"],
-        data[data["Gamma"] == gamma]["RelativeSelfishRevenue"],
-        label=r"$\gamma$ = {}".format(gamma),
-        # # # marker=marker_list[index],
-        # # # color=colour_list[index],
-        # # # markerfacecolor="None",
-        linestyle="-",
+    axs[ii].plot(
+        [0, 0.5],
+        [0, 0.5],
+        label="Honest Mining",
+        color="black",
+        linestyle="--",
+        linewidth=1.0,
     )
-
-    # # # # plotting only every 20th point -> [0::20]
-    # # # # theoretical values
-    # # # ax.plot(
-    # # #     data[data["Gamma"] == gamma]["Alpha"],
-    # # #     calc_revenue(data[data["Gamma"] == gamma]["Alpha"], gamma),
-    # # #     label=r"$\gamma$ = {} (theory)".format(gamma),
-    # # #     # # # color=colour_list[index],
-    # # #     # # # markerfacecolor="None",
-    # # # )
-
-ax.plot(
-    [0, 0.5],
-    [0, 0.5],
-    label="Honest Mining",
-    color="black",
-    linestyle="--",
-    linewidth=1.0,
-)
-
-ax.set_xlabel(r"Relative Pool Size $\alpha$")
-ax.set_ylabel("Relative Pool Revenue")
-ax.tick_params(direction="in")
-ax.legend()
+    axs[ii].set_ylim(0, 1)
+    axs[ii].set_title(
+        f"Topology: {topology_names[ii]} | Latency: {np.round(gammas[0],4)}")
+    axs[ii].tick_params(direction="in")
+    axs[ii].legend(loc='upper left')
 
 # save fig
 fig1_filename = f"fig1_{fname[:-4]}.png"
 path = os.path.dirname(os.getcwd()) + f"/figures/{fig1_filename}"
 plt.savefig(path, bbox_inches="tight")
 
-# # # #################################
-# # # ### Alpha Threshold Plot  #######
-# # # #################################
+#################################
+### Alpha Threshold Plot  #######
+#################################
 
 
 ############################
 # nonsensical in abm context
-def calc_threshold(gamma):
-    g = gamma
-    alpha_threshold_theory = (1 - g) / (3 - 2 * g)
-    return alpha_threshold_theory
+# def calc_threshold(gamma):
+#     g = gamma
+#     alpha_threshold_theory = (1 - g) / (3 - 2 * g)
+#     return alpha_threshold_theory
 ############################
 
 # # # unique_gammas = data["Gamma"].unique()
@@ -138,47 +132,47 @@ def calc_threshold(gamma):
 ###########   MSB Model   ##########
 ####################################
 
-gammas = data["Gamma"].unique()
-marker_list = ["+", "x", "s", "o"]
-colour_list = ["red", "green", "blue", "orange"]
+# gammas = data["Gamma"].unique()
+# marker_list = ["+", "x", "s", "o"]
+# colour_list = ["red", "green", "blue", "orange"]
 
-fig3 = plt.figure()
-ax = fig3.add_subplot(1, 1, 1)
-ax = fig3.add_axes([0.0, 0.0, 1, 1])
+# fig3 = plt.figure()
+# ax = fig3.add_subplot(1, 1, 1)
+# ax = fig3.add_axes([0.0, 0.0, 1, 1])
 
-for (index, gamma) in enumerate(gammas):
-    # plotting only every 20th point -> [0::20]
-    # simulation values
-    ax.plot(
-        data[data["Gamma"] == gamma]["Alpha"],
-        data[data["Gamma"] == gamma]["SelfishMSB"],
-        label=r"$Avg. selfish miner - \gamma$ = {}".format(gamma),
-        # # # marker=marker_list[index],
-        # # # color=colour_list[index],
-        # # # markerfacecolor="None",
-        linestyle="-",
-    )
-    ax.plot(
-        data[data["Gamma"] == gamma]["Alpha"],
-        data[data["Gamma"] == gamma]["HonestMSB"],
-        label=r"$Avg. honest miner - \gamma$ = {}".format(gamma),
-        # # # marker=marker_list[index],
-        # # # color=colour_list[index],
-        # # # markerfacecolor="None",
-        linestyle="-",
-    )
+# for (index, gamma) in enumerate(gammas):
+#     # plotting only every 20th point -> [0::20]
+#     # simulation values
+#     ax.plot(
+#         data[data["Gamma"] == gamma]["Alpha"],
+#         data[data["Gamma"] == gamma]["SelfishMSB"],
+#         label=r"$Avg. selfish miner - \gamma$ = {}".format(gamma),
+#         # # # marker=marker_list[index],
+#         # # # color=colour_list[index],
+#         # # # markerfacecolor="None",
+#         linestyle="-",
+#     )
+#     ax.plot(
+#         data[data["Gamma"] == gamma]["Alpha"],
+#         data[data["Gamma"] == gamma]["HonestMSB"],
+#         label=r"$Avg. honest miner - \gamma$ = {}".format(gamma),
+#         # # # marker=marker_list[index],
+#         # # # color=colour_list[index],
+#         # # # markerfacecolor="None",
+#         linestyle="-",
+#     )
 
-# add significance level (MSB=2) line
-ax.plot(
-    [0, 0.5], [2, 2], label=r"$MSB = 2$", color="black", linestyle="--", linewidth=1.0,
-)
+# # add significance level (MSB=2) line
+# ax.plot(
+#     [0, 0.5], [2, 2], label=r"$MSB = 2$", color="black", linestyle="--", linewidth=1.0,
+# )
 
-ax.set_xlabel(r"Relative Pool Size $\alpha$")
-ax.set_ylabel("MSB")
-ax.tick_params(direction="in")
-ax.legend()
+# ax.set_xlabel(r"Relative Pool Size $\alpha$")
+# ax.set_ylabel("MSB")
+# ax.tick_params(direction="in")
+# ax.legend()
 
-# save fig
-fig3_filename = f"fig3_{fname[:-4]}.png"
-path = os.path.dirname(os.getcwd()) + f"/figures/{fig3_filename}"
-plt.savefig(path, bbox_inches="tight")
+# # save fig
+# fig3_filename = f"fig3_{fname[:-4]}.png"
+# path = os.path.dirname(os.getcwd()) + f"/figures/{fig3_filename}"
+# plt.savefig(path, bbox_inches="tight")
