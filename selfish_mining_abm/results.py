@@ -9,22 +9,6 @@ from config import *
 #### Data import ####
 #####################
 
-# IMPORTED OR DATASET GENERATED LAST?
-use_import = False
-
-# gets the last created filename (which is the latest dataset)
-parent_dir = os.path.dirname(os.getcwd())
-search_dir = parent_dir + "/output/data/"
-os.chdir(search_dir)
-files = filter(os.path.isfile, os.listdir(search_dir))
-files = [os.path.join(search_dir, f) for f in files]  # add path to each file
-files.sort(key=lambda x: os.path.getmtime(x))
-path = files[::-1][0]
-fname = os.path.basename(path)
-
-imported_data_filename = "import.csv"
-path_import = os.getcwd() + f"/{imported_data_filename}"
-
 if use_import:
     fname = imported_data_filename
     data = pd.read_csv(filepath_or_buffer=path_import)
@@ -35,48 +19,114 @@ else:
 ####################################
 #### Relative Pool Revenue Plot ####
 ####################################
-fig, axs = plt.subplots(nrows=3, ncols=1, figsize=(
-    14, 12), sharex=True, sharey=True)
-marker_list = ["+", "x", "s", "o"]
-color_list = ["red", "green", "blue", "orange"]
-topology_names = ["Uniform random", "Erdos-Renyi", "Barabasi-Albert"]
-hash_distr_names = ["Uniform random", "Powerlaw", "Exponential"]
 
-for (ii, topology) in enumerate(topologies):
-    for (jj, hash_distr) in enumerate(hash_distributions):
-        filt = data[
-            (data["Topology"] == topology) &
-            (data["HashingPowerDistribution"] == hash_distr) &
-            (data["Gamma"] == gammas[0])
-        ]
+def multi_plot(iterator1, iterator2):
+    fig, axs = plt.subplots(nrows=3, ncols=1, figsize=(
+        14, 12), sharex=True, sharey=True)
+    marker_list = ["+", "x", "s", "o"]
+    color_list = ["red", "green", "blue", "orange"]
+    topology_names = ["Uniform random", "Erdos-Renyi", "Barabasi-Albert"]
+    hash_distr_names = ["Uniform random", "Powerlaw", "Exponential"]
+    unique_gammas = data["Gamma"].unique()
+
+    header_is_topology = True if iterator1 == topologies else False
+
+    for (ii, iter1) in enumerate(iterator1):
+        for (jj, iter2) in enumerate(iterator2):
+
+            # setup
+            legend_label = f"Hashing Power Distribution: {hash_distr_names[jj]}" if header_is_topology else f"Topology: {topology_names[jj]}"
+            title = f"Topology: {topology_names[ii]}" if header_is_topology else f"Hashing Power Distribution: {hash_distr_names[ii]}"
+            title += f" | Latency: {np.round(unique_gammas[0],4)}"
+
+            if header_is_topology:
+                filt = data[
+                    (data["Topology"] == iter1) &
+                    (data["HashingPowerDistribution"] == iter2) &
+                    (data["Gamma"] == unique_gammas[0])
+                ]
+            else:
+                filt = data[
+                    (data["Topology"] == iter2) &
+                    (data["HashingPowerDistribution"] == iter1) &
+                    (data["Gamma"] == unique_gammas[0])
+                ]
+
+            axs[ii].plot(
+                filt["Alpha"],
+                filt["RelativeSelfishRevenue"],
+                label=legend_label,
+                marker=marker_list[jj],
+                color=color_list[jj],
+                linestyle="-")
+            axs[ii].set_xlabel(r"Relative Pool Size $\alpha$")
+            axs[ii].set_ylabel("Relative Pool Revenue")
+
         axs[ii].plot(
-            filt["Alpha"],
-            filt["RelativeSelfishRevenue"],
-            label=f"Hashing Power Distribution: {hash_distr_names[jj]}",
-            marker=marker_list[jj],
-            color=color_list[jj],
-            linestyle="-")
-        axs[ii].set_xlabel(r"Relative Pool Size $\alpha$")
-        axs[ii].set_ylabel("Relative Pool Revenue")
+            [0, 0.5],
+            [0, 0.5],
+            label="Honest Mining",
+            color="black",
+            linestyle="--",
+            linewidth=1.0,
+        )
+        axs[ii].set_xlim(0, 0.5)
+        axs[ii].set_ylim(0, 1)
+        axs[ii].set_title(title)
+        axs[ii].tick_params(direction="in")
+        axs[ii].legend(loc='upper left')
 
-    axs[ii].plot(
-        [0, 0.5],
-        [0, 0.5],
-        label="Honest Mining",
-        color="black",
-        linestyle="--",
-        linewidth=1.0,
-    )
-    axs[ii].set_ylim(0, 1)
-    axs[ii].set_title(
-        f"Topology: {topology_names[ii]} | Latency: {np.round(gammas[0],4)}")
-    axs[ii].tick_params(direction="in")
-    axs[ii].legend(loc='upper left')
+    # save fig
+    fig_filename = f"topologies_{fname[:-4]}.png" if header_is_topology else f"hash_distributions_{fname[:-4]}.png"
+    path = os.path.dirname(os.getcwd()) + f"/figures/{fig_filename}"
+    plt.savefig(path, bbox_inches="tight")
 
-# save fig
-fig1_filename = f"fig1_{fname[:-4]}.png"
-path = os.path.dirname(os.getcwd()) + f"/figures/{fig1_filename}"
-plt.savefig(path, bbox_inches="tight")
+
+multi_plot(topologies, hash_distributions)
+multi_plot(hash_distributions, topologies)
+
+# # # fig, axs = plt.subplots(nrows=3, ncols=1, figsize=(
+# # #     14, 12), sharex=True, sharey=True)
+# # # marker_list = ["+", "x", "s", "o"]
+# # # color_list = ["red", "green", "blue", "orange"]
+# # # topology_names = ["Uniform random", "Erdos-Renyi", "Barabasi-Albert"]
+# # # hash_distr_names = ["Uniform random", "Powerlaw", "Exponential"]
+
+# # # for (ii, topology) in enumerate(topologies):
+# # #     for (jj, hash_distr) in enumerate(hash_distributions):
+# # #         filt = data[
+# # #             (data["Topology"] == topology) &
+# # #             (data["HashingPowerDistribution"] == hash_distr) &
+# # #             (data["Gamma"] == gammas[0])
+# # #         ]
+# # #         axs[ii].plot(
+# # #             filt["Alpha"],
+# # #             filt["RelativeSelfishRevenue"],
+# # #             label=f"Hashing Power Distribution: {hash_distr_names[jj]}",
+# # #             marker=marker_list[jj],
+# # #             color=color_list[jj],
+# # #             linestyle="-")
+# # #         axs[ii].set_xlabel(r"Relative Pool Size $\alpha$")
+# # #         axs[ii].set_ylabel("Relative Pool Revenue")
+
+# # #     axs[ii].plot(
+# # #         [0, 0.5],
+# # #         [0, 0.5],
+# # #         label="Honest Mining",
+# # #         color="black",
+# # #         linestyle="--",
+# # #         linewidth=1.0,
+# # #     )
+# # #     axs[ii].set_ylim(0, 1)
+# # #     axs[ii].set_title(
+# # #         f"Topology: {topology_names[ii]} | Latency: {np.round(gammas[0],4)}")
+# # #     axs[ii].tick_params(direction="in")
+# # #     axs[ii].legend(loc='upper left')
+
+# # # # save fig
+# # # fig1_filename = f"fig1_{fname[:-4]}.png"
+# # # path = os.path.dirname(os.getcwd()) + f"/figures/{fig1_filename}"
+# # # plt.savefig(path, bbox_inches="tight")
 
 #################################
 ### Alpha Threshold Plot  #######
