@@ -11,7 +11,7 @@ import logging
 from config import *
 from blockchain import GillespieBlockchain
 
-print(centrality_measures)
+
 if __name__ == "__main__":
 
     ##############################################################################
