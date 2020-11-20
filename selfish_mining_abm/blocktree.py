@@ -1,7 +1,9 @@
+import config
+from block import Block
 import networkx as nx
 import numpy as np
-import random, logging
-from block import Block
+import random
+import config
 
 
 class BlockTree:
@@ -202,7 +204,8 @@ class BlockTree:
         mc_honest_miner_id_list = []
         for block_id in mc_block_id_list:
             if not self.attributes[block_id]["miner_is_selfish"]:
-                mc_honest_miner_id_list.append(self.attributes[block_id]["miner"])
+                mc_honest_miner_id_list.append(
+                    self.attributes[block_id]["miner"])
 
         # get list of honest miners (unique) that have at least mined 2 blocks that are part of the main chain
         honest_multi_miner_id_list = list(
@@ -241,24 +244,31 @@ class BlockTree:
                                 S_i += 1
                 S_i_list.append(S_i)
 
-                logging.info("Main chain block IDs: {}".format(mc_block_id_list))
-                logging.info(
-                    "Miner IDs of honest main chain blocks: {}".format(
-                        mc_honest_miner_id_list
+                if config.verbose:
+                    logging.info(
+                        "Main chain block IDs: {}".format(mc_block_id_list))
+                if config.verbose:
+                    logging.info(
+                        "Miner IDs of honest main chain blocks: {}".format(
+                            mc_honest_miner_id_list
+                        )
                     )
-                )
-                logging.info(
-                    "Honest miners that have at least mined two main chain blocks: {}".format(
-                        honest_multi_miner_id_list
+                if config.verbose:
+                    logging.info(
+                        "Honest miners that have at least mined two main chain blocks: {}".format(
+                            honest_multi_miner_id_list
+                        )
                     )
-                )
-                logging.info(
-                    "Shuffled miner IDs of main chain blocks: {}".format(
-                        shuffled_mc_honest_miner_id_ist
+                if config.verbose:
+                    logging.info(
+                        "Shuffled miner IDs of main chain blocks: {}".format(
+                            shuffled_mc_honest_miner_id_ist
+                        )
                     )
-                )
-                logging.info("S_i value: {}".format(S_i))
-                logging.info("---------------")
+                if config.verbose:
+                    logging.info("S_i value: {}".format(S_i))
+                if config.verbose:
+                    logging.info("---------------")
 
             avg_S_i = np.mean(S_i_list)
             std_S_i = np.std(S_i_list)
@@ -268,23 +278,34 @@ class BlockTree:
             else:
                 msb_i = C_i - avg_S_i
 
-            logging.info("Final S_i list: {}".format(S_i_list))
-            logging.info("Avg. S_i: {}".format(avg_S_i))
-            logging.info("Std. S_i: {}".format(std_S_i))
-            logging.info("C_i: {}".format(C_i))
-            logging.info("MSB_i: {}".format(msb_i))
-            logging.info("---------------")
+            if config.verbose:
+                logging.info("Final S_i list: {}".format(S_i_list))
+            if config.verbose:
+                logging.info("Avg. S_i: {}".format(avg_S_i))
+            if config.verbose:
+                logging.info("Std. S_i: {}".format(std_S_i))
+            if config.verbose:
+                logging.info("C_i: {}".format(C_i))
+            if config.verbose:
+                logging.info("MSB_i: {}".format(msb_i))
+            if config.verbose:
+                logging.info("---------------")
 
             honest_MSB_list.append(msb_i)
 
-        avg_honest_MSB = np.mean(honest_MSB_list) if len(honest_MSB_list) > 0 else 0
+        avg_honest_MSB = np.mean(honest_MSB_list) if len(
+            honest_MSB_list) > 0 else 0
         if len(honest_multi_miner_id_list) == 0:
-            logging.info(
-                "There are no honest miners that have mined at least 2 main chain blocks"
-            )
-            logging.info("---------------")
-        logging.info("Final honest MSB_i list: {}".format(honest_MSB_list))
-        logging.info("Average honest MSB: {}".format(avg_honest_MSB))
+            if config.verbose:
+                logging.info(
+                    "There are no honest miners that have mined at least 2 main chain blocks"
+                )
+            if config.verbose:
+                logging.info("---------------")
+        if config.verbose:
+            logging.info("Final honest MSB_i list: {}".format(honest_MSB_list))
+        if config.verbose:
+            logging.info("Average honest MSB: {}".format(avg_honest_MSB))
         return avg_honest_MSB
 
     def __get_selfish_msb(self):
@@ -342,21 +363,31 @@ class BlockTree:
                         S_i += 1
             S_i_list.append(S_i)
 
-            logging.info("Main chain block IDs: {}".format(mc_block_id_list))
-            logging.info(
-                "Selfish main chain block IDs: {}".format(mc_selfish_block_id_list)
-            )
-            logging.info(
-                "Shuffled main chain block IDs: {}".format(shuffled_mc_block_id_list)
-            )
-            logging.info(
-                "Shuffled selfish main chain block IDs: {}".format(
-                    shuffled_mc_selfish_block_id_list
+            if config.verbose:
+                logging.info(
+                    "Main chain block IDs: {}".format(mc_block_id_list))
+            if config.verbose:
+                logging.info(
+                    "Selfish main chain block IDs: {}".format(
+                        mc_selfish_block_id_list)
                 )
-            )
-            logging.info("S_i value: {}".format(S_i))
-            logging.info("---------------")
-        logging.info("Final S_i list: {}".format(S_i_list))
+            if config.verbose:
+                logging.info(
+                    "Shuffled main chain block IDs: {}".format(
+                        shuffled_mc_block_id_list)
+                )
+            if config.verbose:
+                logging.info(
+                    "Shuffled selfish main chain block IDs: {}".format(
+                        shuffled_mc_selfish_block_id_list
+                    )
+                )
+            if config.verbose:
+                logging.info("S_i value: {}".format(S_i))
+            if config.verbose:
+                logging.info("---------------")
+        if config.verbose:
+            logging.info("Final S_i list: {}".format(S_i_list))
 
         avg_S_i = np.mean(S_i_list)
         std_S_i = np.std(S_i_list)
@@ -366,11 +397,16 @@ class BlockTree:
         else:
             selfish_MSB = C_i - avg_S_i
 
-        logging.info("avg. S_i: {}".format(avg_S_i))
-        logging.info("S_i std.: {}".format(std_S_i))
-        logging.info("C_i: {}".format(C_i))
-        logging.info("MSB_i: {}".format(selfish_MSB))
-        logging.info("---------------")
+        if config.verbose:
+            logging.info("avg. S_i: {}".format(avg_S_i))
+        if config.verbose:
+            logging.info("S_i std.: {}".format(std_S_i))
+        if config.verbose:
+            logging.info("C_i: {}".format(C_i))
+        if config.verbose:
+            logging.info("MSB_i: {}".format(selfish_MSB))
+        if config.verbose:
+            logging.info("---------------")
 
         return selfish_MSB
 
@@ -414,7 +450,8 @@ class BlockTree:
         is_honest = np.logical_not(is_selfish)
         # because genesis block is None, np.logical_not() flips it to True.
         is_honest[0] = False
-        is_honest_main = np.array(np.logical_and(is_honest, is_main_chain), dtype=bool)
+        is_honest_main = np.array(np.logical_and(
+            is_honest, is_main_chain), dtype=bool)
         # CALCULATE ORPHAN RATE
         # total number of blocks created
         num_blocks = self.tree.number_of_nodes()
@@ -446,7 +483,8 @@ class BlockTree:
         # NOTE: I removed min/max propagation times -> not really needed
         honest_main_propagated_times = propagation_time[is_honest_main]
         if len(honest_main_propagated_times) > 0:
-            mean_time_honest_main_propagation = np.mean(honest_main_propagated_times)
+            mean_time_honest_main_propagation = np.mean(
+                honest_main_propagated_times)
             median_time_honest_main_propagation = np.median(
                 honest_main_propagated_times
             )
@@ -499,21 +537,30 @@ class BlockTree:
             ):
                 honest_revenue += 1
 
-        relative_selfish_revenue = selfish_revenue / (selfish_revenue + honest_revenue)
-        logging.info(
-            "Number of selfish blocks on main chain: {}".format(selfish_revenue)
-        )
-        logging.info("Number of honest blocks on main chain: {}".format(honest_revenue))
-        logging.info("Relative selfish revenue: {}".format(relative_selfish_revenue))
+        relative_selfish_revenue = selfish_revenue / \
+            (selfish_revenue + honest_revenue)
+        if config.verbose:
+            logging.info(
+                "Number of selfish blocks on main chain: {}".format(
+                    selfish_revenue)
+            )
+        if config.verbose:
+            logging.info(
+                "Number of honest blocks on main chain: {}".format(honest_revenue))
+        if config.verbose:
+            logging.info("Relative selfish revenue: {}".format(
+                relative_selfish_revenue))
         ######################################
         # MINER SEQUENCE BOOTSTRAPPING MODEL #
-        logging.info(
-            "---------------------------\n CALCULATING SELFISH MSB\n---------------------------"
-        )
+        if config.verbose:
+            logging.info(
+                "---------------------------\n CALCULATING SELFISH MSB\n---------------------------"
+            )
         msb_selfish = self.__get_selfish_msb()
-        logging.info(
-            "---------------------------\nCALCULATING HONEST MSB\n---------------------------"
-        )
+        if config.verbose:
+            logging.info(
+                "---------------------------\nCALCULATING HONEST MSB\n---------------------------"
+            )
         msb_honest = self.__get_honest_msb()
         ######################################
 
