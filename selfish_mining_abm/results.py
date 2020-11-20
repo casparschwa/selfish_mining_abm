@@ -207,3 +207,73 @@ def msb_plot(iterator1, iterator2):
 
 msb_plot(topologies, hash_distributions)
 msb_plot(hash_distributions, topologies)
+
+
+def msb_plot2(iterator1, iterator2):
+    fig, axs = plt.subplots(nrows=3, ncols=1, figsize=(
+        14, 12), sharex=True, sharey=True)
+    marker_list = ["+", "x", "s", "o"]
+    color_list = ["red", "green", "blue", "orange"]
+    topology_names = ["Uniform random", "Erdos-Renyi", "Barabasi-Albert"]
+    hash_distr_names = ["Uniform random", "Powerlaw", "Exponential"]
+    unique_gammas = data["Gamma"].unique()
+
+    header_is_topology = True if iterator1 == topologies else False
+
+    for (ii, iter1) in enumerate(iterator1):
+        for (jj, iter2) in enumerate(iterator2):
+
+            # setup
+            legend_label = f"Hashing Power Distribution: {hash_distr_names[jj]}" if header_is_topology else f"Topology: {topology_names[jj]}"
+            title = f"MSB Plot (Topology: {topology_names[ii]})" if header_is_topology else f"MSB Plot (Hashing Power Distribution: {hash_distr_names[ii]})"
+            title += f" | Latency: {np.round(unique_gammas[0],4)}"
+
+            if header_is_topology:
+                filt = data[
+                    (data["Topology"] == iter1) &
+                    (data["HashingPowerDistribution"] == iter2) &
+                    (data["Gamma"] == unique_gammas[0])
+                ]
+            else:
+                filt = data[
+                    (data["Topology"] == iter2) &
+                    (data["HashingPowerDistribution"] == iter1) &
+                    (data["Gamma"] == unique_gammas[0])
+                ]
+
+            axs[ii].plot(
+                filt["RelativeSelfishRevenue"],
+                filt["SelfishMSB"],
+                label=f"Selfish Miner | {legend_label}",
+                marker=marker_list[jj],
+                color=color_list[jj],
+                linestyle="-")
+
+            axs[ii].plot(
+                [1-i for i in filt["RelativeSelfishRevenue"]],
+                filt["HonestMSB"],
+                label=f"Honest Miner | {legend_label}",
+                marker=marker_list[jj],
+                color=color_list[jj],
+                linestyle="--",
+                linewidth=0.8)
+            axs[ii].set_xlabel(r"Relative Pool Size $\alpha$")
+            axs[ii].set_ylabel("Relative Pool Revenue")
+
+        # # add significance level (MSB=2) line
+        axs[ii].plot(
+            [0, 0.5], [2, 2], label=r"$MSB = 2$", color="black", linestyle="dotted", linewidth=1.0,
+        )
+        axs[ii].set_xlim(0, 0.5)
+        axs[ii].set_title(title)
+        axs[ii].tick_params(direction="in")
+        axs[ii].legend(loc='lower left')
+
+    # save fig
+    fig_filename = f"MSB2_topologies_{fname[:-4]}.png" if header_is_topology else f"MSB2_hash_distributions_{fname[:-4]}.png"
+    path = os.path.dirname(os.getcwd()) + f"/figures/{fig_filename}"
+    plt.savefig(path, bbox_inches="tight")
+
+
+msb_plot2(topologies, hash_distributions)
+msb_plot2(hash_distributions, topologies)
