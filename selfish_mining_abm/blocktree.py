@@ -413,6 +413,48 @@ class BlockTree:
 
         return selfish_MSB
 
+    def __get_selfish_msb_tessone(self):
+
+        # Compute C_i
+        # get id's for all mainchain blocks
+        mc_block_id_list = []
+        for block in self.tree.nodes():
+            if self.attributes[block]["main_chain"]:
+                mc_block_id_list.append(
+                    self.attributes[block]["id"])
+
+        # initialize mainchain booleans -> False: honest block; True: selfish block
+        len_mc = len(mc_block_id_list)
+        is_selfish_mc = np.zeros(len_mc, dtype=np.bool)
+
+        # set mainchain booleans to true if block was mined by honest miner
+        for (index, block_id) in enumerate(mc_block_id_list):
+            if self.attributes[block_id]["miner_is_selfish"]:
+                is_selfish_mc[index] = True
+
+        C_i = np.sum(is_selfish_mc[:-1] * is_selfish_mc[1:])
+
+        # Compute S_i
+        repetitions = 100
+        S_i_list = []
+
+        for rep in range(repetitions):
+            shuffled_is_selfish_mc = is_selfish_mc.copy()
+            random.shuffle(shuffled_is_selfish_mc)
+            C_i_rnd = np.sum(
+                shuffled_is_selfish_mc[:-1] * shuffled_is_selfish_mc[1:])
+            S_i_list.append(C_i_rnd)
+        avg_S_i = np.mean(S_i_list)
+        std_S_i = np.std(S_i_list)
+
+        # Finally, compute MSB_i
+        if std_S_i != 0:
+            selfish_MSB = (C_i - avg_S_i) / std_S_i
+        else:
+            selfish_MSB = C_i - avg_S_i
+
+        return selfish_MSB
+
     def __gini(self, array):
         """Calculate the Gini coefficient of a numpy array."""
         # based on bottom eq: http://www.statsdirect.com/help/content/image/stat0206_wmf.gif
@@ -598,6 +640,7 @@ class BlockTree:
                 "---------------------------\n CALCULATING SELFISH MSB\n---------------------------"
             )
         msb_selfish = self.__get_selfish_msb()
+        msb_selfish_tessone = self.__get_selfish_msb_tessone()
         if config.verbose:
             logging.info(
                 "---------------------------\nCALCULATING HONEST MSB\n---------------------------"
@@ -615,6 +658,7 @@ class BlockTree:
             honest_revenue,
             relative_selfish_revenue,
             msb_selfish,
+            msb_selfish_tessone,
             msb_honest,
             mean_time_honest_main_propagation,
             median_time_honest_main_propagation,
