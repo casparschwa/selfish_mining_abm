@@ -7,9 +7,12 @@ import config
 
 
 class BlockTree:
-    def __init__(self):
+    def __init__(self, is_selfish, hashing_power):
         self.tree = nx.DiGraph()  # empty network, gets filled with block creation
         self.tree.add_node(0)  # add one node (genesis block)
+        self.is_selfish = is_selfish  # needed for gini coefficient
+        self.number_nodes = len(is_selfish)  # needed for gini coefficient
+        self.hashing_power = hashing_power  # needed for gini coefficient
 
         # This will become a dict of dicts {node1: {atrr1: xxx, attr2: yyy, ...}, node2: ...}.
         # Allows to have a memory cheap network, dictionary can always be added as attributes/labels.
@@ -336,7 +339,7 @@ class BlockTree:
 
         # Compute S_i (average number of consecutive selfish blocks in shuffled main chain)
         # we need to average, because we're randomly shuffling the block order of the main chain
-        repititions = 10
+        repititions = 100
         # list of consecutive selfish blocks on main chain for each shuffled repitition
         S_i_list = []
         for i in range(repititions):
@@ -409,6 +412,24 @@ class BlockTree:
             logging.info("---------------")
 
         return selfish_MSB
+
+    def __gini(self, array):
+        """Calculate the Gini coefficient of a numpy array."""
+        # based on bottom eq: http://www.statsdirect.com/help/content/image/stat0206_wmf.gif
+        # from: http://www.statsdirect.com/help/default.htm#nonparametric_methods/gini.htm
+
+        array = array[array > 0]
+
+        array = np.sort(array)  # values must be sorted
+        n = array.shape[0]  # number of array elements
+        index = np.arange(1, n+1)  # index per array element
+        # print n, array
+        if n * np.sum(array) == 0:
+            return 0
+
+        # print "---", ((np.sum((2 * index - n  - 1) * array)) / float(n * np.sum(array))) #Gini coefficient
+        # Gini coefficient
+        return ((np.sum((2 * index - n - 1) * array)) / float(n * np.sum(array)))
 
     def results(self):
         """
@@ -521,6 +542,25 @@ class BlockTree:
         # # #         median_time_propagation
         # # #     ) = min_time_propagation = max_time_propagation = float("NaN")
 
+        # GINI COEFFICIENT
+        miner_produce_mainchain = np.zeros(self.number_nodes)
+        miner_produce_offchain = np.zeros(self.number_nodes)
+        miner_produce_both = np.zeros(self.number_nodes)
+
+        for block in self.tree.nodes():
+            if self.attributes[block]["miner"] == "genesis":
+                continue
+            if self.attributes[block]["main_chain"]:
+                miner_produce_mainchain[self.attributes[block]["miner"]] += 1
+            else:
+                miner_produce_offchain[self.attributes[block]["miner"]] += 1
+            miner_produce_both[self.attributes[block]["miner"]] += 1
+
+        gini_hashrate = self.__gini(self.hashing_power)
+        gini_mainchain = self.__gini(miner_produce_mainchain)
+        gini_offchain = self.__gini(miner_produce_offchain)
+        gini_both = self.__gini(miner_produce_both)
+
         # MINING REWARDS
         selfish_revenue = 0
         honest_revenue = 0
@@ -539,6 +579,7 @@ class BlockTree:
 
         relative_selfish_revenue = selfish_revenue / \
             (selfish_revenue + honest_revenue)
+
         if config.verbose:
             logging.info(
                 "Number of selfish blocks on main chain: {}".format(
@@ -587,6 +628,10 @@ class BlockTree:
             median_time_propagation,
             # min_time_propagation,
             # max_time_propagation,
+            gini_hashrate,
+            gini_mainchain,
+            gini_offchain,
+            gini_both,
         ]
 
         return data_point

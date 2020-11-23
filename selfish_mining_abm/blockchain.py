@@ -1,6 +1,7 @@
 import networkx as nx
 import numpy as np
-import logging, os
+import logging
+import os
 from blocktree import BlockTree
 from honest_node import HonestNode
 from selfish_node import SelfishNode
@@ -18,9 +19,13 @@ class GillespieBlockchain:
         # assert net_p2p.number_of_nodes() == len(hashing_power) == len(is_selfish)
         # assert sum(hashing_power) == 1
 
-        self.block_tree = BlockTree()  # initialize block tree
+        # returns an array with indexes of nodes for which hashing_power is >0.
+        (self.hashing_nodes,) = np.where(hashing_power > 0)
+        # Set up hashing power vectors and normalize them
+        self.hashing_power = hashing_power[self.hashing_nodes]
+        self.hashing_power /= np.sum(self.hashing_power)
 
-        #%%%%
+        # %%%%
         # array of booleans: True -> node is selfish / False -> node is honest
         self.is_selfish = is_selfish
 
@@ -31,6 +36,9 @@ class GillespieBlockchain:
         self.honest_index = [
             index for index, value in enumerate(self.is_selfish) if value == False
         ]
+
+        self.block_tree = BlockTree(
+            self.is_selfish, self.hashing_power)  # initialize block tree
 
         # create list of HonestNode and SelfishNode objects respectively
         self.nodes = []
@@ -75,15 +83,10 @@ class GillespieBlockchain:
         for n in self.selfish_index:
             self.nodes[n].set_selfish_neighbors(self.selfish_index)
 
-        # returns an array with indexes of nodes for which hashing_power is >0.
-        (self.hashing_nodes,) = np.where(hashing_power > 0)
-        # Set up hashing power vectors and normalize them
-        self.hashing_power = hashing_power[self.hashing_nodes]
-        self.hashing_power /= np.sum(self.hashing_power)
-
         # Parameters
         # avg. time of network diffusion (network delay / latency)
-        self.tau_nd = tau_nd  # avg. internode delay (avg. time consumed for block delivery between 2 nodes)
+        # avg. internode delay (avg. time consumed for block delivery between 2 nodes)
+        self.tau_nd = tau_nd
         self.tau_mine = tau_mine  # avg. time between blocks -> bitcoin: 10'
         self.lambda_nd = 1.0 / tau_nd  # lambda: network delay (latency)
         self.lambda_mine = 1.0 / tau_mine  # lambda: mining

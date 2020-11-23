@@ -17,10 +17,10 @@ if __name__ == "__main__":
     ##############################################################################
 
     # parameters to loop over
-    alphas = np.linspace(0, 0.5, 3)
+    alphas = np.array(0.4)
     # 1 minute equals 60'000 milliseconds.
     gammas = np.linspace(100, 1000, 1) / 60000
-    repetitions = 2
+    repetitions = 1
     # parameter list as input for multiprocessing
     parameter_list = list(itertools.product(
         list(range(repetitions)), gammas, alphas))

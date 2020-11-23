@@ -213,6 +213,10 @@ if __name__ == "__main__":
         "MedianTimePropagation",
         # "MinTimePropagation",
         # "MaxTimePropagation",
+        "GiniHashrate",
+        "GiniMainchain",
+        "GiniOffchain",
+        "GiniBoth",
     ]
 
     # create a list of lists of lists, where the inner list of lists are lists of the results with the
