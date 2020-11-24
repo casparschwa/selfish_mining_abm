@@ -1,5 +1,6 @@
 To run the code yourself:
 
     run `pip install -r requirements.txt`,
-    run `python multiprocessed_simulation.py` (change parameters inside that script to your liking)
-    to obtain figures run `python results.py`
+    change parameters to your liking in config.py, 
+    then run `python multiprocessed_simulation.py`,
+    to obtain figures run `python results.py`(out of date, using local jupyter notebook at the moment)
