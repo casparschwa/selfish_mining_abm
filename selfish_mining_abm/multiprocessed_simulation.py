@@ -200,7 +200,6 @@ if __name__ == "__main__":
         "HonestRevenue",
         "RelativeSelfishRevenue",
         "SelfishMSB",
-        "SelfishMSBTessone",
         "HonestMSB",
         "MeanTimeHonestMainchainPropagation",
         "MedianTimeHonestMainchainPropagation",
