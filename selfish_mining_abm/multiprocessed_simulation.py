@@ -32,8 +32,9 @@ if __name__ == "__main__":
             net_p2p = nx.barabasi_albert_graph(number_of_nodes, ba_m)
 
         # log actually realized average degree
-        logging.info(
-            f"Actual avg. degree: {2*net_p2p.number_of_edges()/ net_p2p.number_of_nodes()}")
+        if verbose:
+            logging.info(
+                f"Actual avg. degree: {2*net_p2p.number_of_edges()/ net_p2p.number_of_nodes()}")
 
         # get largest connected component
         lcc_set = max(nx.connected_components(net_p2p), key=len)
