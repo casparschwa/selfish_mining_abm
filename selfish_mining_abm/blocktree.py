@@ -350,6 +350,8 @@ class BlockTree:
         num_blocks = self.tree.number_of_nodes()
         # number of blocks part of main chain
         num_blocks_main_chain = np.count_nonzero(is_main_chain)
+        # rate of main chain blocks
+        mainchain_block_rate = float(num_blocks_main_chain / num_blocks)
         # number of orpahned blocks
         num_blocks_orphaned = num_blocks - num_blocks_main_chain
         # rate of orphaned blocks
@@ -357,6 +359,14 @@ class BlockTree:
         # number of selfish/honest blocks
         num_blocks_selfish = np.count_nonzero(is_selfish_block)
         num_blocks_honest = num_blocks - num_blocks_selfish
+
+        # calculate number of unique miners in main chain
+        mc_miner_id_list = []
+        for block in self.tree.nodes():
+            if self.attributes[block]["main_chain"]:
+                mc_miner_id_list.append(self.attributes[block]["miner"])
+        mc_miner_id_list.pop(0)
+        num_unique_miners_mainchain = len(set(mc_miner_id_list))
 
         # PROPAGATION TIMES CALUCLATIONS
         reached_nodes = miners.copy()
@@ -475,6 +485,8 @@ class BlockTree:
             num_blocks_honest,
             num_blocks_main_chain,
             num_blocks_orphaned,
+            mainchain_block_rate,
+            orphaned_block_rate,
             selfish_revenue,
             honest_revenue,
             relative_selfish_revenue,
@@ -482,20 +494,21 @@ class BlockTree:
             msb_honest,
             mean_time_honest_main_propagation,
             median_time_honest_main_propagation,
+            mean_time_propagation,
+            median_time_propagation,
+            gini_hashrate,
+            gini_mainchain,
+            gini_offchain,
+            gini_both,
+            num_unique_miners_mainchain,
             # min_time_honest_main_propagation,
             # max_time_honest_main_propagation,
             # mean_time_fully_propagated,
             # median_time_fully_propagated,
             # min_time_fully_propagated,
             # max_time_fully_propagated,
-            mean_time_propagation,
-            median_time_propagation,
             # min_time_propagation,
             # max_time_propagation,
-            gini_hashrate,
-            gini_mainchain,
-            gini_offchain,
-            gini_both,
         ]
 
         return data_point

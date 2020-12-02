@@ -94,7 +94,7 @@ if __name__ == "__main__":
             hashing_power = hashing_power_unsorted[randomize]
             is_selfish = is_selfish[randomize]
 
-        elif centrality_measure == "BETWEENNESS":
+        elif centrality_measure == "BETWEENNESS" or centrality_measure == "HASHING":
             # compute betweenness centrality and sort it
             btwn = nx.betweenness_centrality(net_p2p)
             btwn_sorted = {k: v for k, v in sorted(
@@ -102,19 +102,31 @@ if __name__ == "__main__":
             # return node indeces sorted for betweenness centrality
             btwn_sorted_indices = list(btwn_sorted.keys())
 
+            # generate is_selfish vector that ensures highest btwn ranked nodes are selfish
+            # for the number of selfish nodes get the node id's of the highest btwn ranked nodes.
             selfish_indices = list(btwn_sorted.keys())[:number_selfish_nodes]
-            honest_indices = list(btwn_sorted.keys())[
-                number_selfish_nodes:len(btwn)]
-
-            # set selifsh nodes according to betweenness centrality
             is_selfish = np.zeros(number_honest_nodes+number_selfish_nodes)
             for i in selfish_indices:
                 is_selfish[i] = 1
 
-            # sort hashing power vector so that selfish nodes are assigned correct hashing power
-            hashing_power = hashing_power_unsorted.copy()
-            for (index, value) in enumerate(btwn_sorted):
-                hashing_power[value] = hashing_power_unsorted[index]
+            if centrality_measure == "BETWEENNESS":
+                # sort hashing power vector so that selfish nodes are assigned correct hashing power
+                hashing_power = hashing_power_unsorted.copy()
+                for (index, value) in enumerate(btwn_sorted):
+                    hashing_power[value] = hashing_power_unsorted[index]
+
+            elif centrality_measure == "HASHING":
+                # sort hashing power vector but separately for selfish and honest nodes and attach
+                hashing_power_sorted = np.append(
+                    sorted(hashing_power_selfish, reverse=True),
+                    sorted(hashing_power_honest, reverse=True)
+                )
+                # sort hashing power vector so that selfish nodes have highest btwn ranked nodes and:
+                # selfish nodes that have more hashing power are assigned higher btwn ranked nodes
+                # honest nodes that have more hashing power are assigned higher btwn ranked nodes
+                hashing_power = hashing_power_sorted.copy()
+                for (index, value) in enumerate(btwn_sorted):
+                    hashing_power[value] = hashing_power_sorted[index]
 
         return hashing_power, is_selfish
 
@@ -196,6 +208,8 @@ if __name__ == "__main__":
         "HonestBlocks",
         "MainchainBlocks",
         "OrphanBlocks",
+        "MainchainBlockRate",
+        "OrphanBlockRate",
         "SelfishRevenue",
         "HonestRevenue",
         "RelativeSelfishRevenue",
@@ -203,20 +217,21 @@ if __name__ == "__main__":
         "HonestMSB",
         "MeanTimeHonestMainchainPropagation",
         "MedianTimeHonestMainchainPropagation",
+        "MeanTimePropagation",
+        "MedianTimePropagation",
+        "GiniHashrate",
+        "GiniMainchain",
+        "GiniOffchain",
+        "GiniBoth",
+        "UniqueMinersMainchain",
         # "MinTimeHonestMainchainPropagation",
         # "MaxTimeHonestMainchainPropagation",
         # "MeanTimeFullyPropagated",
         # "MedianTimeFullyPropagated",
         # "MinTimeFullyPropagated",
         # "MaxTimeFullyPropagated",
-        "MeanTimePropagation",
-        "MedianTimePropagation",
         # "MinTimePropagation",
         # "MaxTimePropagation",
-        "GiniHashrate",
-        "GiniMainchain",
-        "GiniOffchain",
-        "GiniBoth",
     ]
 
     # create a list of lists of lists, where the inner list of lists are lists of the results with the
