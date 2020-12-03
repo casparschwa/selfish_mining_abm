@@ -285,7 +285,7 @@ class BlockTree:
 
         return honest_MSB
 
-    def __prob_mainchain_split():
+    def __prob_mainchain_split(self):
         # get mainchain and orphan block IDs
         mc_blocks = []
         orphan_blocks = []
