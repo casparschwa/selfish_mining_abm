@@ -285,6 +285,29 @@ class BlockTree:
 
         return honest_MSB
 
+    def __prob_mainchain_split():
+        # get mainchain and orphan block IDs
+        mc_blocks = []
+        orphan_blocks = []
+
+        for block in self.tree.nodes():
+            if self.attributes[block]["main_chain"]:
+                mc_blocks.append(self.attributes[block]["id"])
+            else:
+                orphan_blocks.append(self.attributes[block]["id"])
+
+        # count number of main chain splits
+        counter = 0
+        for orphan in orphan_blocks:
+            parent_block = list(self.tree.predecessors(orphan))[0]
+            if self.attributes[parent_block]["main_chain"]:
+                counter += 1
+
+        # compute probability of chain split        
+        prob_mainchain_split = counter / len(self.tree)
+        
+        return prob_mainchain_split
+
     def __gini(self, array):
         """Calculate the Gini coefficient of a numpy array."""
         # based on bottom eq: http://www.statsdirect.com/help/content/image/stat0206_wmf.gif
@@ -367,6 +390,9 @@ class BlockTree:
                 mc_miner_id_list.append(self.attributes[block]["miner"])
         mc_miner_id_list.pop(0)
         num_unique_miners_mainchain = len(set(mc_miner_id_list))
+
+        # compute probability of main chain split
+        prob_mainchain_split = self.__prob_mainchain_split()
 
         # PROPAGATION TIMES CALUCLATIONS
         reached_nodes = miners.copy()
@@ -501,6 +527,7 @@ class BlockTree:
             gini_offchain,
             gini_both,
             num_unique_miners_mainchain,
+            prob_mainchain_split,
             # min_time_honest_main_propagation,
             # max_time_honest_main_propagation,
             # mean_time_fully_propagated,

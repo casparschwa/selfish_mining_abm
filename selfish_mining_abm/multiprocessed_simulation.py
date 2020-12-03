@@ -225,6 +225,7 @@ if __name__ == "__main__":
         "GiniOffchain",
         "GiniBoth",
         "UniqueMinersMainchain",
+        "ProbMainchainSplit",
         # "MinTimeHonestMainchainPropagation",
         # "MaxTimeHonestMainchainPropagation",
         # "MeanTimeFullyPropagated",
