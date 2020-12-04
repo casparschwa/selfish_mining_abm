@@ -285,8 +285,9 @@ class BlockTree:
 
         return honest_MSB
 
-    def __prob_mainchain_split(self):
+    def __get_chainsplit_stats(self):
         # get mainchain and orphan block IDs
+        all_blocks = []
         mc_blocks = []
         orphan_blocks = []
 
@@ -295,18 +296,35 @@ class BlockTree:
                 mc_blocks.append(self.attributes[block]["id"])
             else:
                 orphan_blocks.append(self.attributes[block]["id"])
+            all_blocks.append(self[block]["id"])
+        # disregard genesis block
+        mc_blocks.pop(0)
+        all_blocks.pop(0)
 
-        # count number of main chain splits
-        counter = 0
+        # COUNT NUMBER OF MAINCHAIN SPLITS
+        # count number of main chain splits (disregarding genesis block)
+        mainchain_split_count = 0
         for orphan in orphan_blocks:
             parent_block = list(self.tree.predecessors(orphan))[0]
-            if self.attributes[parent_block]["main_chain"]:
-                counter += 1
+            if self.attributes[parent_block]["main_chain"] and not self[parent_block]["miner"] == "genesis":
+                mainchain_split_count += 1
 
-        # compute probability of chain split        
-        prob_mainchain_split = counter / len(self.tree)
-        
-        return prob_mainchain_split
+        # COUT NUMBER OF ALL CHAIN SPLITS (ORPHAN & MAINCHAIN)
+        # count number of chain splits (disregarding genesis block)
+        chain_split_count = 0
+        for block in all_blocks:
+            num_children = len(list(self.tree.successors(block)))
+            if num_children > 1:
+                chain_split_count += (num_children - 1)
+
+        # COMPUTE PROBABILITY OF MAIN CHAIN BLOCK HAVING NO SIBLINGS
+        # count blocks on main chain that have more than 1 child (disregarding genesis block)
+        mainchain_no_sibling_count = 0
+        for block in mc_blocks:
+            if not len(list(self.tree.successors(block))) > 1:
+                no_sibling_count += 1
+
+        return mainchain_split_count, chain_split_count, mainchain_no_sibling_count
 
     def __gini(self, array):
         """Calculate the Gini coefficient of a numpy array."""
@@ -383,16 +401,16 @@ class BlockTree:
         num_blocks_selfish = np.count_nonzero(is_selfish_block)
         num_blocks_honest = num_blocks - num_blocks_selfish
 
-        # calculate number of unique miners in main chain
+        # calculate number of unique of miners that mined a block on mainchain
         mc_miner_id_list = []
         for block in self.tree.nodes():
             if self.attributes[block]["main_chain"]:
                 mc_miner_id_list.append(self.attributes[block]["miner"])
         mc_miner_id_list.pop(0)
-        num_unique_miners_mainchain = len(set(mc_miner_id_list))
+        unique_miners_mc = len(set(mc_miner_id_list))
 
-        # compute probability of main chain split
-        prob_mainchain_split = self.__prob_mainchain_split()
+        # compute number of main chain splits, all chain splits, and mainchain blocks that have no siblings
+        mainchain_split_count, chain_split_count, mainchain_no_sibling_count = self.__get_chainsplit_stats()
 
         # PROPAGATION TIMES CALUCLATIONS
         reached_nodes = miners.copy()
@@ -506,6 +524,7 @@ class BlockTree:
         ######################################
 
         data_point = [
+            self.number_nodes,
             num_blocks,
             num_blocks_selfish,
             num_blocks_honest,
@@ -526,8 +545,10 @@ class BlockTree:
             gini_mainchain,
             gini_offchain,
             gini_both,
-            num_unique_miners_mainchain,
-            prob_mainchain_split,
+            unique_miners_mc,
+            mainchain_split_count,
+            chain_split_count,
+            mainchain_no_sibling_count
             # min_time_honest_main_propagation,
             # max_time_honest_main_propagation,
             # mean_time_fully_propagated,

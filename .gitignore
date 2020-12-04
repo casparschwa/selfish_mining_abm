@@ -3,9 +3,10 @@ __pycache__
 .vscode
 venv/
 archive/
-notebooks/
-*.ipynb
 *.csv
 *.png
 *.log
 *.dot
+*.ipynb_checkpoints
+notebooks/figures/*
+!notebooks/figures/.gitkeep
