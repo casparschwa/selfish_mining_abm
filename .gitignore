@@ -8,6 +8,5 @@ archive/
 *.log
 *.dot
 *.ipynb_checkpoints
-*.ipynb
 notebooks/figures/*
-!notebooks/figures/.gitkeep
+!notebooks/figures/.gitkeep 
