@@ -132,6 +132,10 @@ class SelfishNode:
         # reset private branch length
         self.private_branch_length = 0
 
+        # update block_to_broadcast_to_honest
+        self.block_to_broadcast_to_honest = self.current_block
+        self.height_to_broadcast_to_honest = self.current_height
+
     def __broadcast_to_selfish(self, except_emitter=None, except_miner=None):
         """
         Description:
@@ -164,6 +168,10 @@ class SelfishNode:
         # discard miner from non_gossiped_to set if except_miner argument is passed (discarding because miner might be emitter)
         if except_miner is not None:
             self.non_gossiped_to.discard(except_miner)
+
+        # update block_to_broadcast_to_honest
+        self.block_to_broadcast_to_honest = self.current_block
+        self.height_to_broadcast_to_honest = self.current_height
 
     def __broadcast_to_honest_inform_selfish(
         self, except_emitter=None, except_miner=None
@@ -234,10 +242,6 @@ class SelfishNode:
                         except_miner=self.block_tree[self.current_block]["miner"],
                     )
 
-                    # update block_to_broadcast_to_honest
-                    self.block_to_broadcast_to_honest = self.current_block
-                    self.height_to_broadcast_to_honest = self.current_height
-
                     if self.verbose:
                         logging.info(
                             "SCENARIO (B): node {} adopted block {} from node {} (height: {}, miner: {})".format(
@@ -293,10 +297,6 @@ class SelfishNode:
                         except_emitter=emitter.id,
                         except_miner=self.block_tree[self.current_block]["miner"],
                     )
-
-                    # update block_to_broadcast_to_honest
-                    self.block_to_broadcast_to_honest = self.current_block
-                    self.height_to_broadcast_to_honest = self.current_height
 
                     if self.verbose:
                         logging.info(
@@ -368,10 +368,6 @@ class SelfishNode:
                         except_miner=self.block_tree[self.current_block]["miner"],
                     )
 
-                    # update block_to_broadcast_to_honest
-                    self.block_to_broadcast_to_honest = self.current_block
-                    self.height_to_broadcast_to_honest = self.current_height
-
                     if self.verbose:
                         logging.info(
                             "SCENARIO (C/D/E): node {} adopted block {} from node {} (height: {}, miner: {})".format(
@@ -393,10 +389,6 @@ class SelfishNode:
 
                     # broadcast current (selfish) block to HONEST NODES (including emitter and miner!)
                     self.__broadcast_to_honest()
-
-                    # update block_to_broadcast_to_honest
-                    self.block_to_broadcast_to_honest = self.current_block
-                    self.height_to_broadcast_to_honest = self.current_height
 
                     if self.verbose:
                         logging.info(
@@ -421,10 +413,6 @@ class SelfishNode:
 
                     # broadcast current (selfish) block to HONEST NODES (including emitter and miner!)
                     self.__broadcast_to_honest()
-
-                    # update block_to_broadcast_to_honest
-                    self.block_to_broadcast_to_honest = self.current_block
-                    self.height_to_broadcast_to_honest = self.current_height
 
                     if self.verbose:
                         logging.info(
