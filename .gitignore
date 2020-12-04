@@ -8,7 +8,6 @@ archive/
 *.log
 *.dot
 *.ipynb_checkpoints
+*.ipynb
 notebooks/figures/*
 !notebooks/figures/.gitkeep
-notebooks/plots.ipynb
-notebooks/latency_plots.ipynb
