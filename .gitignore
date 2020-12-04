@@ -10,3 +10,5 @@ archive/
 *.ipynb_checkpoints
 notebooks/figures/*
 !notebooks/figures/.gitkeep
+notebooks/plots.ipynb
+notebooks/latency_plots.ipynb
