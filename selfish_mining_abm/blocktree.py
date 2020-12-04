@@ -322,7 +322,7 @@ class BlockTree:
         mainchain_no_sibling_count = 0
         for block in mc_blocks:
             if not len(list(self.tree.successors(block))) > 1:
-                no_sibling_count += 1
+                mainchain_no_sibling_count += 1
 
         return mainchain_split_count, chain_split_count, mainchain_no_sibling_count
 
