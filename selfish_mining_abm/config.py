@@ -9,13 +9,14 @@ import logging
 ###############################################################################################
 
 # PARAMETERS TO LOOP OVER
-alphas = np.linspace(0, 0.5, 11)
+alphas = np.linspace(0, 0.5, 21)
 # 1 minute equals 60'000 milliseconds.
-gammas = np.linspace(100, 500, 1) / 60000
+gammas = np.logspace(np.log10(0.0001), np.log10(1000), 21)
+# number of repetitions to average results over
 repetitions = 20
 
 # Hand/pick selfish miners: "RANDOM", "BETWEENNESS"
-centrality_measures = ["RANDOM", "BETWEENNESS"]
+centrality_measures = ["RANDOM", "BETWEENNESS", "HASHING"]
 
 # available topologogies: "UNIFORM", "ER", "BA"
 topologies = ["UNIFORM", "ER", "BA"]
@@ -32,15 +33,18 @@ desired_avg_degree = 10  # applies to ER and RAND topology.
 ba_m = 5  # relevant for BA topology; no. edges to attach from new node to existing nodes
 
 # SPECIFY HASHING POWER DISTRIBUTION
-pl_alpha = 1.88  # input parameter for powerlaw distribution
+pl_alpha = 2  # input parameter for powerlaw distribution
 exp_lambda = 1  # input parameter for exponential distribution
 # ADDITIONAL PARAMETERS
-simulation_time = 1000
-number_of_nodes = 500
+simulation_time = 10000
+number_of_nodes = 100
 number_selfish_nodes = 1  # if there is more than 1 selfish miner, they act as "cartel"
 number_honest_nodes = number_of_nodes - number_selfish_nodes
 verbose = False
 
+#### MULTIPROCESSING PARAMETER ####
+# define number of max processes. This allows to reduce workload for the machine to make it usable for other things besides simulation...
+max_processes = 48
 
 ###############################################################################################
 ####################################### SET UP LOGGING ########################################
@@ -63,21 +67,21 @@ path = parent_dir + f"/output/logs/{fname}"
 logging.basicConfig(
     filename=path, level=logging.DEBUG, filemode="w", format="%(message)s",
 )
-# log basic information
+# log parameter setup
 logging.info(f"List of Alpha values to iterate over: {alphas}")
-logging.info(f"List of Gamma values to iterate over: {gammas}")
+logging.info(f"List of Gamma values to iterate over: {gammas}\n")
+logging.info(f"Total number of repetitions: {repetitions}")
 logging.info(
     f"List of centrality measures to iterate over: {centrality_measures}")
 logging.info(f"List of topologies to iterate over: {topologies}")
 logging.info(
-    f"List of hash distributions to iterate over: {hash_distributions}")
-logging.info(f"Barabasi-Albert graph, m: {ba_m}")
-logging.info(f"Power law hash distribution, alpha: {pl_alpha}")
-logging.info(f"Exponential hash distribution, lambda: {exp_lambda}")
+    f"List of hash distributions to iterate over: {hash_distributions}\n")
 logging.info(
     f"Desired average degree for ER and RAND graph: {desired_avg_degree}")
-logging.info(f"Total simulation time: {simulation_time}")
-logging.info(f"Total number of repetitions: {repetitions}")
+logging.info(f"Barabasi-Albert graph, m: {ba_m}")
+logging.info(f"Power law hash distribution, alpha: {pl_alpha}")
+logging.info(f"Exponential hash distribution, lambda: {exp_lambda}\n")
+logging.info(f"Total simulation time: {simulation_time}\n")
 logging.info(f"Number of nodes: {number_of_nodes}")
 logging.info(f"Number of selfish nodes: {number_selfish_nodes}")
 logging.info(f"Number of honest nodes: {number_honest_nodes}")

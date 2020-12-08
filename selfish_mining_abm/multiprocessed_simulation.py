@@ -180,7 +180,7 @@ if __name__ == "__main__":
 
     start = time.perf_counter()
 
-    with concurrent.futures.ProcessPoolExecutor() as executor:
+    with concurrent.futures.ProcessPoolExecutor(max_workers=max_processes) as executor:
         results = list(
             tqdm(
                 executor.map(run_simulation, parameter_list), total=len(parameter_list)
