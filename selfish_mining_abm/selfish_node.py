@@ -23,6 +23,7 @@ class SelfishNode:
         self.selfish_neighbors = set()
 
         # variables to determine which scenario is taking place
+        # lead of private branch over public branch (is reset when private block is broadcasted to all miners...)
         self.private_branch_length = 0
         self.public_max_height = self.block_tree[current_block]["height"]
         self.delta = self.current_height - self.public_max_height
@@ -297,6 +298,9 @@ class SelfishNode:
                         except_emitter=emitter.id,
                         except_miner=self.block_tree[self.current_block]["miner"],
                     )
+                    ############################
+                    # I think broadcasting to all here, accidentally resets private branch lead ... Which in this case shouldn't happen?!
+                    ############################
 
                     if self.verbose:
                         logging.info(
